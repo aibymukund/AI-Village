@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#E8870B" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<title>AI Village · एआई गाँव</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --saffron:#E8870B;      /* primary action / warmth */
+    --saffron-deep:#C46A00;
+    --marigold:#F7B53B;     /* highlights */
+    --indigo:#22306B;       /* trust / ink */
+    --indigo-soft:#3a4a93;
+    --leaf:#2F8B4E;         /* crops / go / online */
+    --brick:#C8462C;        /* alerts / record */
+    --paper:#FDF7EC;        /* background */
+    --card:#FFFFFF;
+    --line:#EADFCB;
+    --ink:#1E2233;
+    --muted:#6B6655;
+    --shadow:0 6px 0 rgba(34,48,107,.08), 0 14px 30px rgba(34,48,107,.10);
+    --r:22px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Mukta",system-ui,sans-serif;
+    font-size:18px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior-y:none;
+  }
+  h1,h2,h3,.display,button{font-family:"Baloo 2","Mukta",sans-serif}
+  .app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;position:relative;background:var(--paper)}
+
+  /* ---------- Top bar ---------- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:"Baloo 2";font-weight:800;color:var(--indigo);font-size:21px;line-height:1}
+  .brand .dot{width:34px;height:34px;border-radius:10px;background:
+     radial-gradient(circle at 30% 30%, var(--marigold), var(--saffron) 70%);
+     display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 0 var(--saffron-deep)}
+  .brand small{display:block;font-family:"Mukta";font-weight:600;font-size:11px;color:var(--muted);letter-spacing:.5px}
+  .lang{display:flex;background:#fff;border:2px solid var(--line);border-radius:999px;overflow:hidden;font-family:"Baloo 2";font-weight:700}
+  .lang button{border:0;background:transparent;padding:8px 14px;font-size:15px;color:var(--muted);cursor:pointer}
+  .lang button.on{background:var(--indigo);color:#fff}
+
+  .offline-banner{display:none;align-items:center;gap:8px;margin:0 16px;padding:9px 14px;border-radius:14px;
+     background:#FBE7DF;color:var(--brick);font-weight:600;font-size:14px;border:1px solid #f1c9bb}
+  .offline-banner.show{display:flex}
+  .offline-banner .dot{width:8px;height:8px;border-radius:50%;background:var(--brick)}
+
+  /* ---------- Views ---------- */
+  .view{display:none;padding:6px 16px 120px;animation:rise .25s ease}
+  .view.active{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---------- Hero mic (signature) ---------- */
+  .hero{text-align:center;padding:10px 0 4px}
+  .hero h1{margin:6px 0 2px;font-size:26px;color:var(--indigo);font-weight:800}
+  .hero p{margin:0 0 14px;color:var(--muted);font-weight:600;font-size:15px}
+  .micwrap{position:relative;display:inline-grid;place-items:center;margin:6px 0 4px}
+  .mic{
+    width:132px;height:132px;border-radius:50%;border:0;cursor:pointer;position:relative;z-index:2;
+    background:radial-gradient(circle at 32% 28%, var(--marigold), var(--saffron) 62%, var(--saffron-deep));
+    box-shadow:0 8px 0 var(--saffron-deep), 0 18px 34px rgba(196,106,0,.4);
+    color:#fff;display:grid;place-items:center;transition:transform .12s}
+  .mic:active{transform:translateY(4px);box-shadow:0 4px 0 var(--saffron-deep),0 10px 20px rgba(196,106,0,.4)}
+  .mic svg{width:54px;height:54px}
+  .mic.listening{background:radial-gradient(circle at 32% 28%,#ff8e6e,var(--brick) 65%);box-shadow:0 8px 0 #9c2f1c,0 18px 34px rgba(200,70,44,.45)}
+  .ring{position:absolute;inset:0;border-radius:50%;border:3px solid var(--saffron);opacity:0}
+  .mic.listening ~ .ring{animation:ripple 1.6s ease-out infinite}
+  .mic.listening ~ .ring.r2{animation-delay:.5s}
+  .mic.listening ~ .ring.r3{animation-delay:1s}
+  @keyframes ripple{0%{opacity:.5;transform:scale(1)}100%{opacity:0;transform:scale(1.7)}}
+  .mic.idle{animation:breathe 3.4s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+  .mic-hint{font-family:"Baloo 2";font-weight:700;color:var(--saffron-deep);font-size:17px;margin-top:14px}
+  .heard{min-height:22px;color:var(--indigo);font-weight:600;font-size:15px;margin-top:6px}
+
+  /* ---------- Helper grid ---------- */
+  .grid-title{font-family:"Baloo 2";font-weight:700;color:var(--indigo);font-size:17px;margin:22px 4px 12px;display:flex;align-items:center;gap:8px}
+  .grid-title::before{content:"";width:8px;height:20px;border-radius:4px;background:var(--marigold)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .helper{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 14px;text-align:left;cursor:pointer;
+     box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;min-height:118px;transition:transform .12s}
+  .helper:active{transform:translateY(3px)}
+  .helper .ic{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:27px;color:#fff}
+  .helper h3{margin:0;font-size:18px;font-weight:700;color:var(--ink);line-height:1.15}
+  .helper span{font-size:12.5px;color:var(--muted);font-weight:600}
+  .c-saffron{background:var(--saffron)} .c-indigo{background:var(--indigo)} .c-leaf{background:var(--leaf)}
+  .c-brick{background:var(--brick)} .c-plum{background:#7A3E8E} .c-teal{background:#1F8A8A} .c-blue{background:#2C6BB0}
+
+  /* ---------- Sub-view header ---------- */
+  .sub-head{display:flex;align-items:center;gap:12px;padding:8px 0 14px;position:sticky;top:0;background:var(--paper);z-index:5}
+  .back{width:46px;height:46px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:22px;cursor:pointer;display:grid;place-items:center;color:var(--indigo);flex:none}
+  .sub-head .ttl{font-family:"Baloo 2";font-weight:800;font-size:21px;color:var(--indigo);line-height:1.1}
+  .sub-head .ttl small{display:block;font-family:"Mukta";font-weight:600;font-size:12px;color:var(--muted)}
+
+  /* ---------- Chat / assistant ---------- */
+  .chat{display:flex;flex-direction:column;gap:12px;padding-bottom:8px}
+  .bubble{max-width:88%;padding:13px 16px;border-radius:18px;font-size:16.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+  .bubble.ai{background:#fff;border:1px solid var(--line);border-bottom-left-radius:6px;align-self:flex-start;box-shadow:var(--shadow)}
+  .bubble.me{background:var(--indigo);color:#fff;border-bottom-right-radius:6px;align-self:flex-end}
+  .bubble .speak{margin-top:8px;display:inline-flex;align-items:center;gap:6px;font-family:"Baloo 2";font-weight:700;font-size:13px;color:var(--saffron-deep);background:#FFF4E2;border:0;border-radius:999px;padding:5px 11px;cursor:pointer}
+  .typing{display:inline-flex;gap:5px;padding:14px 18px}
+  .typing i{width:9px;height:9px;border-radius:50%;background:var(--saffron);animation:bounce 1.1s infinite}
+  .typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-7px);opacity:1}}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .chip{background:#FFF4E2;border:1px solid #F3DDB6;color:var(--saffron-deep);border-radius:999px;padding:9px 14px;font-family:"Baloo 2";font-weight:700;font-size:14px;cursor:pointer}
+
+  /* ---------- Composer ---------- */
+  .composer{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;padding:10px 14px 16px;
+     background:linear-gradient(transparent,var(--paper) 22%);display:flex;gap:10px;align-items:flex-end}
+  .composer textarea{flex:1;resize:none;border:2px solid var(--line);background:#fff;border-radius:18px;padding:13px 16px;font-family:"Mukta";font-size:16px;max-height:120px;min-height:50px}
+  .composer textarea:focus{outline:none;border-color:var(--saffron)}
+  .cbtn{width:52px;height:52px;border-radius:16px;border:0;display:grid;place-items:center;cursor:pointer;flex:none;color:#fff}
+  .cbtn.mic{background:var(--saffron);box-shadow:0 4px 0 var(--saffron-deep)}
+  .cbtn.mic.listening{background:var(--brick);box-shadow:0 4px 0 #9c2f1c;animation:pulse .9s infinite}
+  .cbtn.send{background:var(--indigo);box-shadow:0 4px 0 #16204d}
+  .cbtn svg{width:24px;height:24px}
+  @keyframes pulse{50%{transform:scale(1.07)}}
+
+  /* ---------- Schemes ---------- */
+  .scheme{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+  .scheme .row{display:flex;gap:12px;align-items:flex-start}
+  .scheme .em{font-size:30px;flex:none}
+  .scheme h3{margin:0 0 2px;font-size:18.5px;color:var(--indigo)}
+  .scheme .who{font-size:13px;color:var(--leaf);font-weight:700;margin:0 0 6px}
+  .scheme p{margin:6px 0 0;font-size:15.5px;color:var(--ink)}
+  .scheme .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .mini{border:0;border-radius:12px;padding:10px 14px;font-family:"Baloo 2";font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .mini.ask{background:var(--saffron);color:#fff}
+  .mini.listen{background:#FFF4E2;color:var(--saffron-deep)}
+  .mini.link{background:#EEF1FA;color:var(--indigo);text-decoration:none}
+  .disclaim{font-size:13px;color:var(--muted);background:#FBF1DD;border:1px dashed #e4cf9f;border-radius:14px;padding:12px 14px;margin:4px 0 16px;font-weight:600}
+
+  /* ---------- Lessons ---------- */
+  .lesson{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--shadow);cursor:pointer;display:flex;gap:14px;align-items:center}
+  .lesson .num{width:46px;height:46px;border-radius:50%;background:var(--indigo);color:#fff;display:grid;place-items:center;font-family:"Baloo 2";font-weight:800;font-size:20px;flex:none}
+  .lesson h3{margin:0;font-size:17px;color:var(--ink)}
+  .lesson span{font-size:13px;color:var(--muted);font-weight:600}
+  .lesson .go{margin-left:auto;color:var(--saffron);font-size:24px}
+  .reader h2{color:var(--indigo);font-size:23px;margin:4px 0 4px}
+  .reader .para{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;font-size:17.5px;line-height:1.65;box-shadow:var(--shadow);margin-bottom:12px}
+  .reader .tip{background:#EAF4EC;border:1px solid #c5e3cd;color:#1f5e34;border-radius:16px;padding:14px;font-weight:600;margin-bottom:12px}
+  .bigbtn{width:100%;border:0;border-radius:18px;padding:16px;font-family:"Baloo 2";font-weight:800;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px}
+  .bigbtn.primary{background:var(--saffron);color:#fff;box-shadow:0 5px 0 var(--saffron-deep)}
+  .bigbtn.ghost{background:#fff;color:var(--indigo);border:2px solid var(--line)}
+
+  .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--indigo);color:#fff;
+     padding:12px 18px;border-radius:14px;font-weight:600;font-size:14px;opacity:0;transition:.25s;z-index:30;max-width:90%;text-align:center;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition:none!important}
+  }
+  /* ---- photo helper ---- */
+  .photo-intro{display:flex;flex-direction:column;gap:12px;margin-bottom:8px}
+  .photo-intro .lead{font-size:16px;color:var(--muted);font-weight:600;text-align:center;margin:2px 0 4px}
+  .capbtn{width:100%;border:0;border-radius:20px;padding:20px 16px;font-family:"Baloo 2";font-weight:800;font-size:19px;
+     cursor:pointer;display:flex;align-items:center;gap:14px;text-align:left;color:#fff;box-shadow:var(--shadow)}
+  .capbtn .e{font-size:34px;line-height:1}
+  .capbtn small{display:block;font-family:"Mukta";font-weight:600;font-size:13px;opacity:.9}
+  .capbtn.read{background:linear-gradient(120deg,#C8462C,#e0613f)}
+  .capbtn.cropd{background:linear-gradient(120deg,#2F8B4E,#3fae63)}
+  .gallery-link{text-align:center;font-family:"Baloo 2";font-weight:700;color:var(--indigo);font-size:14px;cursor:pointer;padding:6px}
+  .bubble img{max-width:200px;border-radius:14px;display:block}
+  /* ---- helpline ---- */
+  .hl{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:18px;
+     padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow);text-decoration:none;color:inherit}
+  .hl .e{font-size:28px;flex:none}
+  .hl .who{font-family:"Baloo 2";font-weight:700;font-size:17px;color:var(--ink)}
+  .hl .no{font-family:"Baloo 2";font-weight:800;font-size:20px;color:var(--leaf);letter-spacing:1px}
+  .hl .call{margin-left:auto;background:var(--leaf);color:#fff;border:0;border-radius:50%;width:48px;height:48px;
+     display:grid;place-items:center;font-size:22px;flex:none;box-shadow:0 4px 0 #1f5e34}
+  /* ---- shared pickers ---- */
+  .pickrow{display:flex;gap:10px;margin-bottom:10px}
+  .pick{flex:1;min-width:0;border:2px solid var(--line);background:#fff;border-radius:14px;padding:13px 14px;font-family:"Mukta";font-size:16px;color:var(--ink)}
+  .pick:focus{outline:none;border-color:var(--saffron)}
+  select.pick{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2322306B' stroke-width='3'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+  .pickbtn{flex:none;width:52px;border:0;border-radius:14px;background:var(--indigo);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 4px 0 #16204d}
+  .note{font-size:13px;color:var(--muted);background:#FBF1DD;border:1px dashed #e4cf9f;border-radius:14px;padding:11px 14px;margin:6px 0 14px;font-weight:600}
+  .empty{text-align:center;color:var(--muted);font-weight:600;padding:30px 10px;font-size:15px}
+
+  /* ---- tabs ---- */
+  .tabs{display:flex;gap:8px;background:#F2EAD9;border-radius:14px;padding:5px;margin-bottom:14px}
+  .tab{flex:1;border:0;background:transparent;border-radius:10px;padding:11px;font-family:"Baloo 2";font-weight:700;font-size:15px;color:var(--muted);cursor:pointer}
+  .tab.on{background:#fff;color:var(--indigo);box-shadow:0 2px 6px rgba(0,0,0,.06)}
+
+  /* ---- mandi ---- */
+  .price{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .price .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .price .mkt{font-family:"Baloo 2";font-weight:700;color:var(--indigo);font-size:16px}
+  .price .modal{font-family:"Baloo 2";font-weight:800;color:var(--leaf);font-size:22px;white-space:nowrap}
+  .price .rng{font-size:13px;color:var(--muted);font-weight:600;margin-top:3px}
+  .sample-tag{display:inline-block;background:#FFF4E2;color:var(--saffron-deep);font-weight:700;font-size:12px;border-radius:8px;padding:3px 9px;margin-bottom:8px}
+
+  /* ---- weather ---- */
+  .wx-now{background:linear-gradient(135deg,var(--indigo),#3a4a93);color:#fff;border-radius:22px;padding:20px;text-align:center;box-shadow:var(--shadow);margin-bottom:12px}
+  .wx-now .big{font-family:"Baloo 2";font-weight:800;font-size:52px;line-height:1}
+  .wx-now .desc{font-weight:600;font-size:17px;margin-top:4px}
+  .wx-now .sub{opacity:.85;font-size:14px;margin-top:6px}
+  .wx-advice{background:#EAF4EC;border:1px solid #c5e3cd;color:#1f5e34;border-radius:16px;padding:14px;font-weight:600;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start}
+  .wx-days{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .wx-day{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 6px;text-align:center;box-shadow:var(--shadow)}
+  .wx-day .d{font-weight:700;font-size:13px;color:var(--muted)}
+  .wx-day .em{font-size:26px;margin:4px 0}
+  .wx-day .tmp{font-family:"Baloo 2";font-weight:700;font-size:14px;color:var(--ink)}
+  .geo-opt{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer}
+
+  /* ---- reminders ---- */
+  .rm-new{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);margin-bottom:16px;display:flex;flex-direction:column;gap:10px}
+  .rm-row{display:flex;gap:10px;align-items:center}
+  .rm-daily{display:flex;align-items:center;gap:6px;font-weight:600;font-size:15px;white-space:nowrap}
+  .rm-daily input{width:20px;height:20px}
+  .rm{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .rm .clk{font-family:"Baloo 2";font-weight:800;font-size:20px;color:var(--saffron-deep);flex:none}
+  .rm .txt{font-weight:600}
+  .rm .when{font-size:12px;color:var(--muted)}
+  .rm .del{margin-left:auto;background:#FBE7DF;color:var(--brick);border:0;border-radius:10px;width:40px;height:40px;font-size:18px;cursor:pointer;flex:none}
+
+  /* ---- safety ---- */
+  .sf{background:#fff;border:1px solid var(--line);border-left:6px solid var(--brick);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+  .sf h3{margin:0 0 6px;color:var(--brick);font-size:17px;display:flex;align-items:center;gap:8px}
+  .sf .trick{font-size:15px;color:var(--ink);margin:0 0 8px}
+  .sf .rule{background:#EAF4EC;border-radius:12px;padding:10px 12px;font-weight:700;color:#1f5e34;font-size:15px}
+  .sf .speak{margin-top:10px}
+
+  /* ---- my docs + save button ---- */
+  .doc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .doc h3{margin:0 0 4px;font-size:16px;color:var(--indigo)}
+  .doc .prev{font-size:14px;color:var(--muted);max-height:46px;overflow:hidden}
+  .doc .acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .bubble .save{margin-top:8px;margin-left:8px;display:inline-flex;align-items:center;gap:6px;font-family:"Baloo 2";font-weight:700;font-size:13px;color:var(--indigo);background:#EEF1FA;border:0;border-radius:999px;padding:5px 11px;cursor:pointer}
+
+  /* ---- templates ---- */
+  .tmpl{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:10px;box-shadow:var(--shadow);cursor:pointer}
+  .tmpl .e{font-size:28px;flex:none}
+  .tmpl h3{margin:0;font-size:16.5px;color:var(--ink)}
+  .tmpl span{font-size:13px;color:var(--muted)}
+  .tmpl .go{margin-left:auto;color:var(--saffron);font-size:24px}
+  .fld{margin-bottom:13px}
+  .fld label{display:block;font-family:"Baloo 2";font-weight:700;font-size:15px;color:var(--indigo);margin-bottom:5px}
+  .fld .hint{font-weight:600;color:var(--muted);font-size:12px}
+  .fld input,.fld textarea,.fld select{width:100%;border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 13px;font-family:"Mukta";font-size:16px;color:var(--ink)}
+  .fld textarea{min-height:74px;resize:vertical}
+  .fld input:focus,.fld textarea:focus,.fld select:focus{outline:none;border-color:var(--saffron)}
+  .fld .withmic{display:flex;gap:8px;align-items:flex-start}
+  .fld .micf{flex:none;width:50px;border:0;border-radius:12px;background:var(--saffron);color:#fff;font-size:20px;cursor:pointer;align-self:stretch}
+  .fld .micf.listening{background:var(--brick);animation:pulse .9s infinite}
+  .result{background:#FFFDF6;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow);white-space:pre-wrap;font-size:16px;line-height:1.7;margin-bottom:14px}
+  .res-acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .res-acts .bigbtn{margin-top:0}
+  .bigbtn.wa{background:#25D366;color:#fff;box-shadow:0 5px 0 #1da851}
+  .bigbtn.copy2{background:var(--indigo);color:#fff;box-shadow:0 5px 0 #16204d}
+  .bigbtn.save2{background:#7A3E8E;color:#fff;box-shadow:0 5px 0 #5c2c6b}
+  .bigbtn.listen2{background:var(--saffron);color:#fff;box-shadow:0 5px 0 var(--saffron-deep)}
+
+  @media(max-width:360px){ .helper h3{font-size:16px} .mic{width:116px;height:116px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <span class="dot">🌾</span>
+      <span>AI Village<small data-t="tagline">आपका गाँव साथी</small></span>
+    </div>
+    <div class="lang" id="lang">
+      <button data-lang="hi" class="on">हिं</button>
+      <button data-lang="en">EN</button>
+    </div>
+  </div>
+
+  <div class="offline-banner" id="offlineBanner">
+    <span class="dot"></span><span data-t="offline">इंटरनेट बंद है — सीखना और योजनाएँ फिर भी खुलेंगी</span>
+  </div>
+
+  <!-- HOME -->
+  <section class="view active" id="view-home">
+    <div class="hero">
+      <h1 data-t="hello">नमस्ते 🙏</h1>
+      <p data-t="hsub">बटन दबाइए और बोलिए — मैं सुन रहा हूँ</p>
+      <div class="micwrap">
+        <button class="mic idle" id="homeMic" aria-label="बोलिए">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span>
+      </div>
+      <div class="mic-hint" id="micHint" data-t="tapspeak">दबाकर बोलिए</div>
+      <div class="heard" id="homeHeard"></div>
+    </div>
+
+    <div class="grid-title" data-t="sec_daily">रोज़ की जानकारी</div>
+    <div class="grid" id="gridDaily"></div>
+    <div class="grid-title" data-t="sec_ai">AI साथी</div>
+    <div class="grid" id="gridAI"></div>
+  </section>
+
+  <!-- ASSISTANT / CHAT -->
+  <section class="view" id="view-chat">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" id="chatTitle">साथी<small id="chatSub"></small></div>
+    </div>
+    <div class="chat" id="chatLog"></div>
+    <div class="chips" id="chatChips"></div>
+  </section>
+
+  <!-- SCHEMES -->
+  <section class="view" id="view-schemes">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" data-t="sch_t">सरकारी योजनाएँ<small data-t="sch_s">आसान भाषा में</small></div>
+    </div>
+    <div class="disclaim" data-t="sch_disc">नीचे दी गई जानकारी सरल परिचय है। पैसे, पात्रता और आख़िरी तारीख़ सरकारी पोर्टल पर ज़रूर जाँचें।</div>
+    <div id="schemeList"></div>
+  </section>
+
+  <!-- LESSONS -->
+  <section class="view" id="view-lessons">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" data-t="les_t">AI सीखें<small data-t="les_s">5 छोटे पाठ · इंटरनेट के बिना भी</small></div>
+    </div>
+    <div id="lessonList"></div>
+  </section>
+
+  <!-- LESSON READER -->
+  <section class="view" id="view-reader">
+    <div class="sub-head">
+      <button class="back" data-lessons>‹</button>
+      <div class="ttl" data-t="les_t">AI सीखें</div>
+    </div>
+    <div class="reader" id="readerBody"></div>
+  </section>
+
+  <!-- HELPLINE -->
+  <section class="view" id="view-helpline">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" data-t="hl_t">ज़रूरी नंबर<small data-t="hl_s">दबाकर सीधे कॉल करें</small></div>
+    </div>
+    <div class="disclaim" data-t="hl_disc">ये नंबर पूरे देश में मुफ़्त हैं और बिना इंटरनेट चलते हैं। एम्बुलेंस के लिए आपके राज्य का नंबर अलग हो सकता है।</div>
+    <div id="helplineList"></div>
+  </section>
+
+  <!-- MANDI PRICES -->
+  <section class="view" id="view-mandi">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" data-t="md_t">आज के भाव<small data-t="md_s">मंडी के दाम (₹/क्विंटल)</small></div>
+    </div>
+    <div class="pickrow">
+      <select id="mdState" class="pick"></select>
+      <select id="mdCrop" class="pick"></select>
+    </div>
+    <button class="bigbtn primary" id="mdGo" style="margin-bottom:14px">🔎 <span data-t="md_go">भाव देखें</span></button>
+    <div id="mandiResult"></div>
+  </section>
+
+  <!-- WEATHER -->
+  <section class="view" id="view-weather">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" data-t="wx_t">मौसम<small id="wxPlace"></small></div>
+    </div>
+    <div class="pickrow">
+      <input id="wxSearch" class="pick" placeholder="गाँव/शहर का नाम..." />
+      <button class="pickbtn" id="wxSearchBtn">🔎</button>
+    </div>
+    <button class="bigbtn ghost" id="wxLocate" style="margin-bottom:12px">📍 <span data-t="wx_locate">मेरी जगह का मौसम</span></button>
+    <div id="wxResult"></div>
+  </section>
+
+  <!-- CALCULATOR -->
+  <section class="view" id="view-calc">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" data-t="cl_t">हिसाब<small data-t="cl_s">नाप, तौल और ब्याज</small></div>
+    </div>
+    <div class="tabs" id="calcTabs">
+      <button class="tab on" data-tab="area" data-t="cl_area">ज़मीन</button>
+      <button class="tab" data-tab="weight" data-t="cl_weight">तौल</button>
+      <button class="tab" data-tab="loan" data-t="cl_loan">ब्याज</button>
+    </div>
+    <div id="calcBody"></div>
+  </section>
+
+  <!-- REMINDERS -->
+  <section class="view" id="view-remind">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" data-t="rm_t">याद दिलाओ<small data-t="rm_s">दवा, किस्त, बुवाई</small></div>
+    </div>
+    <div class="rm-new">
+      <input id="rmText" class="pick" placeholder="क्या याद दिलाऊँ? जैसे: दवा लेना" />
+      <div class="rm-row">
+        <input id="rmTime" type="time" class="pick" />
+        <label class="rm-daily"><input type="checkbox" id="rmDaily"/> <span data-t="rm_daily">रोज़</span></label>
+        <button class="pickbtn" id="rmMic">🎤</button>
+      </div>
+      <button class="bigbtn primary" id="rmAdd">➕ <span data-t="rm_add">याद जोड़ें</span></button>
+    </div>
+    <div id="rmList"></div>
+  </section>
+
+  <!-- SAFETY -->
+  <section class="view" id="view-safety">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" data-t="sf_t">सुरक्षा कवच<small data-t="sf_s">ठगी पहचानें, बचें</small></div>
+    </div>
+    <div id="safetyList"></div>
+  </section>
+
+  <!-- MY DOCS -->
+  <section class="view" id="view-mydocs">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" data-t="dc_t">मेरे कागज़<small data-t="dc_s">बनाई हुई चिट्ठियाँ</small></div>
+    </div>
+    <div id="docsList"></div>
+  </section>
+
+  <!-- TEMPLATES LIST -->
+  <section class="view" id="view-templates">
+    <div class="sub-head">
+      <button class="back" data-home>‹</button>
+      <div class="ttl" data-t="tp_t">तैयार ढाँचे<small data-t="tp_s">खाली जगह भरें — बिना इंटरनेट</small></div>
+    </div>
+    <div id="tmplList"></div>
+  </section>
+
+  <!-- TEMPLATE FORM + RESULT -->
+  <section class="view" id="view-tform">
+    <div class="sub-head">
+      <button class="back" id="tformBack">‹</button>
+      <div class="ttl" id="tformTitle"></div>
+    </div>
+    <div id="tformBody"></div>
+  </section>
+</div>
+
+<!-- Composer (chat only) -->
+<div class="composer" id="composer" style="display:none">
+  <textarea id="input" rows="1" placeholder="लिखिए या बोलिए..."></textarea>
+  <button class="cbtn mic" id="composerMic" aria-label="बोलिए">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+  </button>
+  <button class="cbtn send" id="sendBtn" aria-label="भेजें">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" accept="image/*" capture="environment" id="cam" style="display:none">
+<input type="file" accept="image/*" id="gallery" style="display:none">
+
+<script>
+/* ============================================================
+   AI VILLAGE — single-file voice-first PWA for first-time AI users
+   All UI copy lives in STRINGS (hi/en) — translate by swap, not rebuild.
+   The "AI brain" goes through one function: askAI(). See API_ENDPOINT.
+   ============================================================ */
+
+/* ---- 1. AI endpoint -------------------------------------------------
+   In the Claude preview, calls to api.anthropic.com work as-is.
+   To DEPLOY on Netlify/Tiiny, set this to your serverless proxy
+   (e.g. "/.netlify/functions/ask") so your API key stays on the server.
+--------------------------------------------------------------------- */
+const API_ENDPOINT = (location.hostname.includes("anthropic") || location.hostname.includes("claude") || location.protocol==="blob:")
+  ? "https://api.anthropic.com/v1/messages"   // Claude preview (key injected automatically)
+  : "/.netlify/functions/ask";                // your deployed site (key stays on server)
+const MODEL = "claude-haiku-4-5";  // only used in the Claude preview; the deployed site uses Gemini (free) via the server function
+
+/* ---- 2. Safe storage (localStorage with in-memory fallback) -------- */
+const mem = {};
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return mem[k] ?? null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){ mem[k]=v; } }
+};
+
+/* ---- 3. Language + UI strings -------------------------------------- */
+let LANG = store.get("lang") || "hi";
+const STRINGS = {
+  hi:{ tagline:"आपका गाँव साथी", hello:"नमस्ते 🙏", hsub:"बटन दबाइए और बोलिए — मैं सुन रहा हूँ",
+    tapspeak:"दबाकर बोलिए", listening:"सुन रहा हूँ...", helpers:"गाँव के साथी",
+    offline:"इंटरनेट बंद है — सीखना और योजनाएँ फिर भी खुलेंगी",
+    sch_t:"सरकारी योजनाएँ", sch_s:"आसान भाषा में",
+    sch_disc:"नीचे दी गई जानकारी सरल परिचय है। पैसे, पात्रता और आख़िरी तारीख़ सरकारी पोर्टल पर ज़रूर जाँचें।",
+    les_t:"AI सीखें", les_s:"5 छोटे पाठ · इंटरनेट के बिना भी",
+    ask:"पूछें", listen:"सुनें", official:"सरकारी पोर्टल", openchat:"AI से पूछें",
+    needNet:"यह काम इंटरनेट से होता है। कृपया इंटरनेट चालू करें।",
+    writeOrSpeak:"लिखिए या बोलिए...", thinking:"सोच रहा हूँ...",
+    speakErr:"माफ़ करें, अभी जवाब नहीं मिला। दोबारा कोशिश करें।",
+    noVoice:"इस फ़ोन में आवाज़ सुनने की सुविधा नहीं है। आप लिखकर बता सकते हैं।",
+    tryit:"AI से पूछकर देखें",
+    hl_t:"ज़रूरी नंबर", hl_s:"दबाकर सीधे कॉल करें",
+    hl_disc:"ये नंबर पूरे देश में मुफ़्त हैं और बिना इंटरनेट चलते हैं। एम्बुलेंस के लिए आपके राज्य का नंबर अलग हो सकता है।",
+    ph_lead:"क्या पढ़ना है? नीचे का बटन दबाकर फोटो खींचिए।",
+    ph_read:"लिखावट पढ़ें", ph_read2:"साइन, फॉर्म, चिट्ठी, दवा का पत्ता",
+    ph_crop:"फसल की जाँच", ph_crop2:"पत्ता या पौधा दिखाइए",
+    ph_gallery:"या फोटो गैलरी से चुनें", ph_again:"📷 दूसरी फोटो",
+    sec_daily:"रोज़ की जानकारी", sec_ai:"AI साथी",
+    md_t:"आज के भाव", md_s:"मंडी के दाम (₹/क्विंटल)", md_go:"भाव देखें",
+    md_loading:"भाव ढूँढ रहे हैं...", md_none:"इस मंडी के आज के भाव नहीं मिले। दूसरा राज्य या फसल चुनें।",
+    md_sample:"नमूना — असली भाव के लिए अपनी data.gov.in कुंजी जोड़ें",
+    wx_t:"मौसम", wx_locate:"मेरी जगह का मौसम", wx_ph:"गाँव/शहर का नाम...",
+    wx_loading:"मौसम ला रहे हैं...", wx_err:"मौसम नहीं मिल पाया। दोबारा कोशिश करें।",
+    wx_geo:"जगह नहीं मिली। ऊपर नाम लिखकर ढूँढें।",
+    cl_t:"हिसाब", cl_s:"नाप, तौल और ब्याज", cl_area:"ज़मीन", cl_weight:"तौल", cl_loan:"ब्याज",
+    rm_t:"याद दिलाओ", rm_s:"दवा, किस्त, बुवाई", rm_daily:"रोज़", rm_add:"याद जोड़ें",
+    rm_ph:"क्या याद दिलाऊँ? जैसे: दवा लेना", rm_none:"अभी कोई याद नहीं। ऊपर से जोड़ें।",
+    rm_saved:"याद जुड़ गई ✓", rm_need:"क्या याद दिलाना है और कब — दोनों भरें।",
+    rm_perm:"याद दिलाने के लिए सूचना (notification) चालू करें।",
+    sf_t:"सुरक्षा कवच", sf_s:"ठगी पहचानें, बचें",
+    dc_t:"मेरे कागज़", dc_s:"बनाई हुई चिट्ठियाँ", dc_none:"अभी कोई कागज़ नहीं। चिट्ठी या फॉर्म बनाकर 'सहेजें' दबाएँ।",
+    dc_save:"सहेजें", dc_saved:"सहेज लिया ✓", dc_open:"खोलें", dc_copy:"कॉपी", dc_copied:"कॉपी हो गया ✓", dc_del:"हटाएँ",
+    tp_t:"तैयार ढाँचे", tp_s:"खाली जगह भरें — बिना इंटरनेट",
+    tp_make:"✍️ चिट्ठी बनाएँ", tp_edit:"✏️ बदलें", tp_copy:"📋 कॉपी", tp_save:"💾 सहेजें",
+    tp_listen:"🔊 सुनें", tp_wa:"📲 WhatsApp", tp_fill:"नीचे ज़रूरी जानकारी भरें, फिर बनाएँ दबाएँ।",
+    tp_need:"कृपया नाम और मुख्य जानकारी ज़रूर भरें।",
+    back:"वापस" },
+  en:{ tagline:"Your village companion", hello:"Namaste 🙏", hsub:"Press the button and speak — I'm listening",
+    tapspeak:"Press to speak", listening:"Listening...", helpers:"Village helpers",
+    offline:"You're offline — lessons and schemes still open",
+    sch_t:"Government schemes", sch_s:"In simple words",
+    sch_disc:"This is a simple introduction. Always check the amount, eligibility and last date on the official portal.",
+    les_t:"Learn AI", les_s:"5 short lessons · works offline too",
+    ask:"Ask", listen:"Listen", official:"Official site", openchat:"Ask AI",
+    needNet:"This needs internet. Please turn on internet.",
+    writeOrSpeak:"Type or speak...", thinking:"Thinking...",
+    speakErr:"Sorry, no answer right now. Please try again.",
+    noVoice:"This phone can't listen to voice. You can type instead.",
+    tryit:"Try asking the AI",
+    hl_t:"Helpline numbers", hl_s:"Tap to call directly",
+    hl_disc:"These numbers are free across India and work without internet. The ambulance number may differ in your state.",
+    ph_lead:"What should I read? Tap a button below to take a photo.",
+    ph_read:"Read text", ph_read2:"Sign, form, letter, medicine label",
+    ph_crop:"Check a crop", ph_crop2:"Show a leaf or plant",
+    ph_gallery:"Or pick a photo from gallery", ph_again:"📷 Another photo",
+    sec_daily:"Daily info", sec_ai:"AI helpers",
+    md_t:"Today's prices", md_s:"Mandi rates (₹/quintal)", md_go:"Show prices",
+    md_loading:"Finding prices...", md_none:"No prices for this mandi today. Try another state or crop.",
+    md_sample:"Sample — add your own data.gov.in key for live prices",
+    wx_t:"Weather", wx_locate:"Weather for my location", wx_ph:"Village/town name...",
+    wx_loading:"Getting weather...", wx_err:"Couldn't get weather. Please try again.",
+    wx_geo:"Location not found. Type a name above to search.",
+    cl_t:"Calculator", cl_s:"Area, weight and interest", cl_area:"Land", cl_weight:"Weight", cl_loan:"Loan",
+    rm_t:"Reminders", rm_s:"Medicine, EMI, sowing", rm_daily:"Daily", rm_add:"Add reminder",
+    rm_ph:"What to remind? e.g. Take medicine", rm_none:"No reminders yet. Add one above.",
+    rm_saved:"Reminder added ✓", rm_need:"Fill in both what and when.",
+    rm_perm:"Turn on notifications to get reminded.",
+    sf_t:"Safety shield", sf_s:"Spot scams, stay safe",
+    dc_t:"My papers", dc_s:"Letters you made", dc_none:"No papers yet. Make a letter or form and press 'Save'.",
+    dc_save:"Save", dc_saved:"Saved ✓", dc_open:"Open", dc_copy:"Copy", dc_copied:"Copied ✓", dc_del:"Delete",
+    tp_t:"Ready templates", tp_s:"Fill the blanks — works offline",
+    tp_make:"✍️ Create letter", tp_edit:"✏️ Edit", tp_copy:"📋 Copy", tp_save:"💾 Save",
+    tp_listen:"🔊 Listen", tp_wa:"📲 WhatsApp", tp_fill:"Fill the needed details below, then press Create.",
+    tp_need:"Please fill at least your name and the main details.",
+    back:"Back" }
+};
+const t = k => (STRINGS[LANG][k] ?? STRINGS.hi[k] ?? k);
+
+/* ---- 4. Helpers (the village square) ------------------------------- */
+const HELPERS = [
+  // ---- रोज़ की जानकारी (daily info)
+  { id:"mandi",   sec:"daily", emoji:"🧺", cls:"c-leaf",   hi:"भाव", en:"Mandi prices", hsub:"आज के दाम", esub:"Today's rates", kind:"mandi" },
+  { id:"weather", sec:"daily", emoji:"🌦️", cls:"c-blue",   hi:"मौसम", en:"Weather", hsub:"4 दिन का हाल", esub:"4-day forecast", kind:"weather" },
+  { id:"calc",    sec:"daily", emoji:"🧮", cls:"c-teal",   hi:"हिसाब", en:"Calculator", hsub:"नाप, तौल, ब्याज", esub:"Area, weight, loan", kind:"calc" },
+  { id:"schemes", sec:"daily", emoji:"📜", cls:"c-saffron",hi:"योजनाएँ", en:"Schemes", hsub:"सरकारी मदद", esub:"Govt help", kind:"view" },
+  { id:"safety",  sec:"daily", emoji:"🛡️", cls:"c-brick",  hi:"सुरक्षा", en:"Stay safe", hsub:"ठगी से बचें", esub:"Avoid fraud", kind:"view" },
+  { id:"helpline",sec:"daily", emoji:"📞", cls:"c-indigo", hi:"ज़रूरी नंबर", en:"Helpline", hsub:"मुफ़्त, बिना नेट", esub:"Free, offline", kind:"view" },
+  // ---- AI साथी (AI helpers)
+  { id:"assistant",sec:"ai", emoji:"🗣️",cls:"c-saffron", hi:"कुछ भी पूछें", en:"Ask anything", hsub:"बोलकर पूछें", esub:"Just speak", kind:"chat" },
+  { id:"photo",   sec:"ai", emoji:"📷", cls:"c-brick",   hi:"फोटो पढ़ें", en:"Read a photo", hsub:"लिखावट व फसल", esub:"Text & crops", kind:"photo" },
+  { id:"letter",  sec:"ai", emoji:"✉️", cls:"c-indigo",  hi:"चिट्ठी / अर्ज़ी", en:"Letters & forms", hsub:"तैयार ढाँचे, बिना नेट", esub:"Templates, offline", kind:"templates" },
+  { id:"form",    sec:"ai", emoji:"📝", cls:"c-blue",    hi:"फॉर्म भरें", en:"Fill a form", hsub:"कदम-कदम मदद", esub:"Step by step", kind:"chat" },
+  { id:"translate",sec:"ai",emoji:"🔁", cls:"c-teal",    hi:"अनुवाद", en:"Translate", hsub:"हिंदी ↔ अंग्रेज़ी", esub:"Hindi ↔ English", kind:"chat" },
+  { id:"crop",    sec:"ai", emoji:"🌱", cls:"c-leaf",    hi:"खेती सलाह", en:"Crop advice", hsub:"फसल, मौसम", esub:"Farming help", kind:"chat" },
+  { id:"study",   sec:"ai", emoji:"📚", cls:"c-plum",    hi:"पढ़ाई सलाह", en:"Study help", hsub:"बच्चों के लिए", esub:"For students", kind:"chat" },
+  { id:"remind",  sec:"ai", emoji:"⏰", cls:"c-brick",   hi:"याद दिलाओ", en:"Reminders", hsub:"दवा, किस्त, बुवाई", esub:"Medicine, EMI", kind:"remind" },
+  { id:"mydocs",  sec:"ai", emoji:"📁", cls:"c-plum",    hi:"मेरे कागज़", en:"My papers", hsub:"बनाई चिट्ठियाँ", esub:"Saved letters", kind:"view" },
+  { id:"learn",   sec:"ai", emoji:"💡", cls:"c-saffron", hi:"AI सीखें", en:"Learn AI", hsub:"5 आसान पाठ", esub:"5 easy lessons", kind:"view" },
+];
+
+/* ---- 5. System prompts per helper ---------------------------------- */
+const BASE_RULES =
+ "You are 'Gaon Mitra', a warm village friend inside the AI Village app for first-time AI users in rural and small-town India. " +
+ "Reply in very simple, short spoken sentences. Avoid hard words. Be kind and respectful. " +
+ "IMPORTANT SAFETY: For anything about government money, eligibility, deadlines, health, legal or large financial decisions, give general help but clearly tell the person to confirm on the official government portal or with a local expert (Krishi Vigyan Kendra, doctor, panchayat office). " +
+ "Never ask for and never store OTP, Aadhaar number, passwords or bank details. If the person shares such a thing, gently warn them not to share it with anyone. " +
+ "Keep answers under 120 words unless asked for a full letter. ";
+const PROMPTS = {
+  assistant: BASE_RULES + "Help with whatever the person asks: schemes, letters, forms, crops, study, daily questions.",
+  letter:    BASE_RULES + "The person needs a letter or application. Ask only the few things you must know (to whom, the reason), then write a clean, polite, ready-to-copy letter in their language. Keep it simple and correct.",
+  form:      BASE_RULES + "The person is filling a form. Explain each field in simple words, one step at a time, and help them write a good answer for each. Do not invent their personal details — ask them.",
+  translate: "You are a careful translator inside a village app. Detect the language and translate between Hindi and English (or the language the user writes). Give ONLY the translation, then on a new line a very short simpler version if the sentence is hard. No extra talk.",
+  crop:      BASE_RULES + "The person is a farmer. Give simple, practical crop and weather guidance. ALWAYS remind them that for pesticide doses, serious disease, or big decisions they should confirm with the local Krishi Vigyan Kendra or agriculture officer. Never recommend exact chemical quantities.",
+  study:     BASE_RULES + "Help with education: explaining a topic simply for a child, study tips, and pointing to scholarships or education schemes. Encourage the learner warmly.",
+  photo_read: BASE_RULES + "The person has sent a PHOTO of text — a sign, form, notice, letter, bill, or medicine label. First read all the text you can see. Then explain in very simple words what it says and what the person should do next. If it is a form, explain each field in order. If it is a medicine label, say what it is generally for and how it says to take it, and tell them to confirm with a doctor or chemist. SAFETY: if you see an Aadhaar number, bank account, card or OTP, do NOT repeat those digits — just say the paper has personal numbers and to keep them private.",
+  photo_crop: BASE_RULES + "The person has sent a PHOTO of a crop, plant or leaf. Look carefully. In simple words say: what the plant seems to be, what the problem might be (insect, disease, too much/little water, missing nutrient), and 1–2 easy first steps. ALWAYS end by saying this is only a guess from a photo, and they must confirm with the local Krishi Vigyan Kendra or the Kisan Call Centre (1800-180-1551) before spraying anything. NEVER give exact pesticide names or doses."
+};
+
+/* ---- 6. Government schemes (offline starter data) ------------------
+   These are simple, stable summaries. VERIFY current figures/eligibility
+   on the official portals before users rely on them. Edit freely.
+--------------------------------------------------------------------- */
+const SCHEMES = [
+ { em:"🌾", hi:"पीएम-किसान सम्मान निधि", en:"PM-KISAN", whoHi:"छोटे और सीमांत किसान", whoEn:"Small & marginal farmers",
+   dHi:"खेती करने वाले किसान परिवारों को साल में ₹6,000 तीन किस्तों में सीधे बैंक खाते में मिलते हैं।",
+   dEn:"Eligible farmer families get ₹6,000 a year in three instalments, straight to their bank account.",
+   url:"https://pmkisan.gov.in" },
+ { em:"🏥", hi:"आयुष्मान भारत (PM-JAY)", en:"Ayushman Bharat", whoHi:"पात्र गरीब परिवार", whoEn:"Eligible low-income families",
+   dHi:"हर परिवार को साल में ₹5 लाख तक का मुफ़्त इलाज, सूची वाले अस्पतालों में बिना पैसे दिए।",
+   dEn:"Up to ₹5 lakh free treatment per family per year, cashless at empanelled hospitals.",
+   url:"https://pmjay.gov.in" },
+ { em:"🏠", hi:"पीएम आवास योजना (ग्रामीण)", en:"PM Awas Yojana – Gramin", whoHi:"बेघर/कच्चे घर वाले परिवार", whoEn:"Families without a pucca house",
+   dHi:"गाँव के पात्र परिवारों को पक्का घर बनाने के लिए सरकारी मदद मिलती है।",
+   dEn:"Government help for eligible rural families to build a pucca (solid) house.",
+   url:"https://pmayg.nic.in" },
+ { em:"🛠️", hi:"मनरेगा (काम का अधिकार)", en:"MGNREGA", whoHi:"गाँव का हर परिवार", whoEn:"Every rural household",
+   dHi:"साल में 100 दिन के काम की गारंटी और उसके बदले तय मज़दूरी। जॉब कार्ड बनवाना ज़रूरी है।",
+   dEn:"A guarantee of up to 100 days of paid work a year. You need a job card.",
+   url:"https://nrega.nic.in" },
+ { em:"🔥", hi:"उज्ज्वला योजना (गैस)", en:"PM Ujjwala Yojana", whoHi:"पात्र परिवार की महिलाएँ", whoEn:"Women of eligible families",
+   dHi:"पात्र परिवारों की महिलाओं को मुफ़्त रसोई गैस कनेक्शन दिया जाता है।",
+   dEn:"A free LPG cooking-gas connection for women of eligible households.",
+   url:"https://www.pmuy.gov.in" },
+ { em:"👧", hi:"सुकन्या समृद्धि योजना", en:"Sukanya Samriddhi", whoHi:"बेटी (10 साल से कम)", whoEn:"Girl child under 10",
+   dHi:"बेटी के नाम बचत खाता, अच्छा ब्याज और टैक्स में छूट। पढ़ाई और शादी के लिए बचत।",
+   dEn:"A savings account for a girl child with good interest and tax benefit — for her study and future.",
+   url:"https://www.india.gov.in" },
+ { em:"☂️", hi:"फसल बीमा योजना", en:"PM Fasal Bima", whoHi:"किसान", whoEn:"Farmers",
+   dHi:"फसल खराब होने पर बीमा से भरपाई। किसान बहुत कम प्रीमियम देता है, बाकी सरकार देती है।",
+   dEn:"Crop insurance if your harvest fails. The farmer pays a small premium, the government pays the rest.",
+   url:"https://pmfby.gov.in" }
+];
+
+/* ---- 7. AI literacy lessons (offline) ------------------------------ */
+const LESSONS = [
+ { hi:"AI क्या है?", en:"What is AI?", subHi:"बिलकुल शुरू से", subEn:"From the start",
+   paras_hi:[
+     "AI एक ऐसा कंप्यूटर प्रोग्राम है जो बहुत सारी चीज़ें पढ़कर सीखता है, ठीक वैसे जैसे बच्चा देख-देख कर सीखता है।",
+     "आप उससे सवाल पूछ सकते हैं और वह आसान भाषा में जवाब देने की कोशिश करता है। यह जादू नहीं है — यह एक मददगार औज़ार है।",
+     "AI थकता नहीं, दिन-रात मदद कर सकता है। पर यह इंसान नहीं है, और हमेशा सही नहीं होता।"],
+   paras_en:[
+     "AI is a computer program that learns by reading lots and lots of things, like a child learns by watching.",
+     "You can ask it questions and it tries to answer in simple words. It is not magic — it is a helpful tool.",
+     "AI does not get tired and can help day or night. But it is not a person, and it is not always right."],
+   tipHi:"याद रखें: AI एक औज़ार है, जैसे सिलाई मशीन या ट्रैक्टर — आपके काम को आसान बनाने के लिए।",
+   tipEn:"Remember: AI is a tool, like a sewing machine or tractor — made to make your work easier." },
+
+ { hi:"AI से कैसे बात करें", en:"How to talk to AI", subHi:"अच्छा जवाब पाने का तरीका", subEn:"Get better answers",
+   paras_hi:[
+     "साफ़ और पूरी बात बोलिए। जैसे: 'मेरे गाँव में धान की फसल है, उसमें पीले पत्ते आ रहे हैं, क्या करूँ?'",
+     "जितनी ज़्यादा जानकारी देंगे, जवाब उतना अच्छा मिलेगा — जगह, फसल, उम्र, जो भी ज़रूरी हो।",
+     "अगर जवाब समझ न आए, तो कहिए 'और आसान भाषा में बताओ' या 'छोटा करके बताओ'।"],
+   paras_en:[
+     "Speak clearly and fully. Like: 'I grow paddy in my village and the leaves are turning yellow, what should I do?'",
+     "The more you tell it, the better the answer — place, crop, age, whatever matters.",
+     "If you don't understand, just say 'explain in simpler words' or 'make it shorter'."],
+   tipHi:"डरिए मत — आप जितनी बार चाहें पूछ सकते हैं। कोई गलत सवाल नहीं होता।",
+   tipEn:"Don't be shy — ask as many times as you want. There are no wrong questions." },
+
+ { hi:"AI हमेशा सही नहीं होता", en:"AI can be wrong", subHi:"सबसे ज़रूरी पाठ", subEn:"The most important lesson",
+   paras_hi:[
+     "AI कभी-कभी गलत या पुरानी बात बता सकता है, ख़ासकर पैसे, तारीख़ और सरकारी नियमों के बारे में।",
+     "किसी भी सरकारी योजना का पैसा, पात्रता या आख़िरी तारीख़ हमेशा सरकारी पोर्टल या दफ़्तर में जाँचें।",
+     "बीमारी या दवा की बात हो तो डॉक्टर से, और खेती के बड़े फ़ैसले के लिए कृषि अधिकारी से ज़रूर पूछें।"],
+   paras_en:[
+     "AI can sometimes give a wrong or old answer, especially about money, dates and government rules.",
+     "Always check any scheme's amount, eligibility or last date on the official portal or office.",
+     "For illness or medicine, ask a doctor; for big farming decisions, ask the agriculture officer."],
+   tipHi:"सुनहरा नियम: ज़रूरी फ़ैसले से पहले AI की बात किसी भरोसेमंद इंसान या सरकारी जगह से मिला लें।",
+   tipEn:"Golden rule: before any important decision, confirm AI's answer with a trusted person or official source." },
+
+ { hi:"अपनी जानकारी सुरक्षित रखें", en:"Keep your details safe", subHi:"धोखे से बचिए", subEn:"Stay safe from fraud",
+   paras_hi:[
+     "कभी भी अपना OTP, बैंक का पासवर्ड या ATM पिन किसी को न दें — न AI को, न फ़ोन पर किसी को।",
+     "AI से बात करते समय भी बैंक खाता नंबर या आधार नंबर लिखने की ज़रूरत नहीं है।",
+     "अगर कोई कॉल या मैसेज कहे 'OTP बताओ, पैसा आएगा' — तो वह धोखा है। तुरंत मना कर दें।"],
+   paras_en:[
+     "Never give your OTP, bank password or ATM PIN to anyone — not to AI, not to anyone on a call.",
+     "You do not need to type your bank account or Aadhaar number when talking to AI.",
+     "If a call or message says 'tell me the OTP and you'll get money' — it's a scam. Refuse at once."],
+   tipHi:"बैंक और सरकार कभी फ़ोन पर OTP नहीं माँगते। माँगे तो समझ जाइए — धोखा है।",
+   tipEn:"Banks and government never ask for your OTP on a call. If someone asks, it's a scam." },
+
+ { hi:"रोज़ के काम में AI", en:"AI in daily life", subHi:"अब आज़माइए", subEn:"Try it now",
+   paras_hi:[
+     "AI से चिट्ठी या अर्ज़ी लिखवा सकते हैं, फॉर्म भरने में मदद ले सकते हैं, और अंग्रेज़ी-हिंदी अनुवाद करवा सकते हैं।",
+     "बच्चों की पढ़ाई समझाने, किसी शब्द का मतलब जानने, या किसी योजना के बारे में पूछने में भी यह काम आता है।",
+     "सबसे अच्छी बात — आप बोलकर पूछ सकते हैं, लिखना ज़रूरी नहीं।"],
+   paras_en:[
+     "You can get AI to write a letter or application, help fill a form, and translate Hindi–English.",
+     "It also helps explain school lessons to children, find a word's meaning, or ask about a scheme.",
+     "Best of all — you can ask by speaking, no need to type."],
+   tipHi:"नीचे का बटन दबाइए और 'कुछ भी पूछें' साथी से बात कीजिए।",
+   tipEn:"Press the button below and talk to the 'Ask anything' helper." }
+];
+
+/* ---- 7b. Helpline numbers (offline) -------------------------------- */
+const HELPLINE = [
+ { em:"🚨", num:"112",            hi:"आपातकाल (सब कुछ)", en:"Emergency (all)" },
+ { em:"🚑", num:"108",            hi:"एम्बुलेंस", en:"Ambulance" },
+ { em:"👮", num:"100",            hi:"पुलिस", en:"Police" },
+ { em:"🔥", num:"101",            hi:"आग बुझाने वाले", en:"Fire" },
+ { em:"🧒", num:"1098",           hi:"बच्चों की मदद", en:"Child helpline" },
+ { em:"👩", num:"181",            hi:"महिला हेल्पलाइन", en:"Women helpline" },
+ { em:"💸", num:"1930",           hi:"ऑनलाइन ठगी / धोखा", en:"Cyber fraud" },
+ { em:"🌾", num:"18001801551",    hi:"किसान कॉल सेंटर", en:"Kisan Call Centre", show:"1800-180-1551" },
+ { em:"💡", num:"1912",           hi:"बिजली की शिकायत", en:"Electricity complaint" }
+];
+
+/* ---- 7c. Safety / scam pack (offline) ------------------------------ */
+const SAFETY = [
+ { em:"📵", hi:"फ़र्ज़ी OTP कॉल", en:"Fake OTP call",
+   trickHi:"कोई फ़ोन पर कहता है 'बैंक से बोल रहा हूँ, OTP बताओ नहीं तो खाता बंद हो जाएगा'।",
+   trickEn:"Someone calls saying 'I'm from the bank, tell me the OTP or your account will close'.",
+   ruleHi:"बैंक कभी OTP नहीं माँगता। किसी को भी OTP मत बताइए — फ़ोन काट दीजिए।",
+   ruleEn:"A bank never asks for OTP. Never share it with anyone — just hang up." },
+ { em:"🔗", hi:"नकली लिंक / KYC मैसेज", en:"Fake link / KYC message",
+   trickHi:"मैसेज आता है 'KYC अपडेट करो वरना खाता बंद' और साथ में एक लिंक होता है।",
+   trickEn:"A message says 'update KYC or account will close' with a link to tap.",
+   ruleHi:"ऐसे लिंक पर कभी मत दबाइए। KYC हमेशा बैंक जाकर या असली ऐप में करें।",
+   ruleEn:"Never tap such links. Do KYC only at the bank or the real app." },
+ { em:"💰", hi:"पैसे 'पाने' का धोखा (UPI)", en:"'Receive money' UPI trick",
+   trickHi:"कोई कहता है 'मैं पैसे भेज रहा हूँ, बस PIN डालो'। PIN डालते ही पैसे कट जाते हैं।",
+   trickEn:"Someone says 'I'm sending money, just enter your PIN'. Entering PIN takes money OUT.",
+   ruleHi:"पैसे लेने के लिए कभी PIN नहीं डालते। PIN सिर्फ़ पैसे देते समय लगता है।",
+   ruleEn:"You never enter a PIN to RECEIVE money. PIN is only for sending money." },
+ { em:"🎁", hi:"लॉटरी / इनाम का लालच", en:"Lottery / prize bait",
+   trickHi:"'आपकी ₹25 लाख की लॉटरी लगी! फ़ीस भेजो'— ऐसा मैसेज या कॉल।",
+   trickEn:"'You won a ₹25 lakh lottery! Send a fee first' — message or call.",
+   ruleHi:"बिना टिकट कोई लॉटरी नहीं लगती। फ़ीस माँगे तो पक्का धोखा है।",
+   ruleEn:"You can't win a lottery you never entered. If they ask for a fee, it's a scam." },
+ { em:"📱", hi:"नकली लोन ऐप", en:"Fake loan apps",
+   trickHi:"'5 मिनट में लोन' वाली ऐप पूरी फ़ोनबुक माँगती है, फिर धमकाकर ज़्यादा वसूलती है।",
+   trickEn:"'Loan in 5 minutes' apps grab your contacts, then threaten and overcharge.",
+   ruleHi:"सिर्फ़ बैंक या भरोसेमंद जगह से लोन लें। अनजान ऐप को संपर्क की इजाज़त मत दें।",
+   ruleEn:"Borrow only from a bank or trusted source. Don't give unknown apps your contacts." }
+];
+
+/* ---- 7d. Mandi reference lists ------------------------------------- */
+const MD_STATES = ["Madhya Pradesh","Uttar Pradesh","Maharashtra","Rajasthan","Bihar","Punjab","Haryana","Gujarat","Karnataka","West Bengal","Andhra Pradesh","Tamil Nadu"];
+const MD_CROPS  = ["Wheat","Paddy(Dhan)","Soyabean","Onion","Potato","Tomato","Gram","Maize","Mustard","Cotton","Sugarcane","Garlic"];
+// Sample fallback rows (clearly labelled in UI) so the screen works offline / before a live key
+const MD_SAMPLE = [
+  {market:"Indore", modal:2450, min:2300, max:2600},
+  {market:"Dewas",  modal:2380, min:2250, max:2500},
+  {market:"Ujjain", modal:2510, min:2400, max:2620}
+];
+
+/* ---- 8. Speech: recognition + synthesis (hi-IN) -------------------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recog = null, listeningTarget = null;
+function makeRecognizer(){
+  if(!SR) return null;
+  const r = new SR();
+  r.lang = LANG === "hi" ? "hi-IN" : "en-IN";
+  r.interimResults = true; r.maxAlternatives = 1; r.continuous = false;
+  return r;
+}
+function startListening(onText, micEls){
+  if(!SR){ toast(t("noVoice")); return; }
+  if(recog){ try{recog.stop()}catch(e){} }
+  recog = makeRecognizer();
+  let finalText = "";
+  micEls.forEach(el=>el.classList.add("listening"));
+  recog.onresult = e=>{
+    let interim="";
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const r=e.results[i];
+      if(r.isFinal) finalText += r[0].transcript;
+      else interim += r[0].transcript;
+    }
+    onText(finalText || interim, e.results[e.results.length-1].isFinal);
+  };
+  recog.onerror = ()=>{ micEls.forEach(el=>el.classList.remove("listening")); };
+  recog.onend = ()=>{ micEls.forEach(el=>el.classList.remove("listening")); if(finalText) onText(finalText, true); };
+  try{ recog.start(); }catch(e){}
+}
+function stopListening(){ if(recog){ try{recog.stop()}catch(e){} } }
+
+let voices = [];
+function loadVoices(){ voices = window.speechSynthesis ? speechSynthesis.getVoices() : []; }
+if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function speak(text){
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/[*#_>`]/g,""));
+  const want = LANG==="hi" ? "hi" : "en";
+  const v = voices.find(v=>v.lang && v.lang.toLowerCase().startsWith(want+"-")) ||
+            voices.find(v=>v.lang && v.lang.toLowerCase().startsWith(want));
+  if(v) u.voice = v;
+  u.lang = LANG==="hi" ? "hi-IN" : "en-IN";
+  u.rate = 0.96; u.pitch = 1;
+  speechSynthesis.speak(u);
+}
+
+/* ---- 9. The AI brain — one function -------------------------------- */
+async function askAI(systemPrompt, history){
+  const res = await fetch(API_ENDPOINT, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ model:MODEL, max_tokens:1000, system:systemPrompt, messages:history })
+  });
+  if(!res.ok) throw new Error("api "+res.status);
+  const data = await res.json();
+  return (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
+}
+
+/* ---- 10. Views & rendering ----------------------------------------- */
+const views = {
+  home:document.getElementById("view-home"),
+  chat:document.getElementById("view-chat"),
+  schemes:document.getElementById("view-schemes"),
+  lessons:document.getElementById("view-lessons"),
+  reader:document.getElementById("view-reader"),
+  helpline:document.getElementById("view-helpline"),
+  mandi:document.getElementById("view-mandi"),
+  weather:document.getElementById("view-weather"),
+  calc:document.getElementById("view-calc"),
+  remind:document.getElementById("view-remind"),
+  safety:document.getElementById("view-safety"),
+  mydocs:document.getElementById("view-mydocs"),
+  templates:document.getElementById("view-templates"),
+  tform:document.getElementById("view-tform"),
+};
+const composer = document.getElementById("composer");
+function show(name){
+  Object.values(views).forEach(v=>v.classList.remove("active"));
+  views[name].classList.add("active");
+  composer.style.display = name==="chat" ? "flex" : "none";
+  window.scrollTo(0,0);
+  stopListening(); if(window.speechSynthesis) speechSynthesis.cancel();
+}
+
+function renderHelpers(){
+  const gd=document.getElementById("gridDaily"), ga=document.getElementById("gridAI");
+  gd.innerHTML=""; ga.innerHTML="";
+  HELPERS.forEach(h=>{
+    const b=document.createElement("button"); b.className="helper";
+    b.innerHTML=`<div class="ic ${h.cls}">${h.emoji}</div>
+      <div><h3>${LANG==="hi"?h.hi:h.en}</h3><span>${LANG==="hi"?h.hsub:h.esub}</span></div>`;
+    b.onclick=()=>openHelper(h);
+    (h.sec==="daily"?gd:ga).appendChild(b);
+  });
+}
+
+function renderSchemes(){
+  const l=document.getElementById("schemeList"); l.innerHTML="";
+  SCHEMES.forEach(s=>{
+    const name = LANG==="hi"?s.hi:s.en, who=LANG==="hi"?s.whoHi:s.whoEn, desc=LANG==="hi"?s.dHi:s.dEn;
+    const d=document.createElement("div"); d.className="scheme";
+    d.innerHTML=`<div class="row"><div class="em">${s.em}</div><div>
+        <h3>${name}</h3><p class="who">👥 ${who}</p><p>${desc}</p></div></div>
+      <div class="acts">
+        <button class="mini ask">💬 ${t("ask")}</button>
+        <button class="mini listen">🔊 ${t("listen")}</button>
+        <a class="mini link" href="${s.url}" target="_blank" rel="noopener">🌐 ${t("official")}</a>
+      </div>`;
+    d.querySelector(".ask").onclick=()=>{
+      openHelper(HELPERS.find(h=>h.id==="assistant"));
+      const q = LANG==="hi" ? `${name} योजना के बारे में आसान भाषा में बताइए — मुझे कैसे फ़ायदा मिलेगा और कहाँ आवेदन करूँ?`
+                            : `Tell me about ${name} in simple words — how do I benefit and where do I apply?`;
+      sendMessage(q);
+    };
+    d.querySelector(".listen").onclick=()=>speak(`${name}. ${desc}`);
+    l.appendChild(d);
+  });
+}
+
+function renderLessons(){
+  const l=document.getElementById("lessonList"); l.innerHTML="";
+  LESSONS.forEach((les,i)=>{
+    const d=document.createElement("div"); d.className="lesson";
+    d.innerHTML=`<div class="num">${i+1}</div><div><h3>${LANG==="hi"?les.hi:les.en}</h3>
+       <span>${LANG==="hi"?les.subHi:les.subEn}</span></div><div class="go">›</div>`;
+    d.onclick=()=>openLesson(i);
+    l.appendChild(d);
+  });
+}
+
+function openLesson(i){
+  const les=LESSONS[i]; const paras=LANG==="hi"?les.paras_hi:les.paras_en;
+  const tip=LANG==="hi"?les.tipHi:les.tipEn; const title=LANG==="hi"?les.hi:les.en;
+  const body=document.getElementById("readerBody");
+  body.innerHTML=`<h2>${title}</h2>` +
+    paras.map(p=>`<div class="para">${p}</div>`).join("") +
+    `<div class="tip">💡 ${tip}</div>
+     <button class="bigbtn primary" id="lsListen">🔊 ${LANG==="hi"?"पूरा पाठ सुनें":"Listen to lesson"}</button>` +
+    (i===LESSONS.length-1 ? `<button class="bigbtn ghost" id="lsTry">🗣️ ${t("tryit")}</button>`:"");
+  show("reader");
+  document.getElementById("lsListen").onclick=()=>speak(`${title}. ${paras.join(" ")} ${tip}`);
+  const tr=document.getElementById("lsTry"); if(tr) tr.onclick=()=>openHelper(HELPERS.find(h=>h.id==="assistant"));
+}
+
+/* ---- 11. Chat / assistant ------------------------------------------ */
+let CHAT = { id:null, history:[] };
+function openHelper(h){
+  const route = {
+    schemes:()=>{renderSchemes();show("schemes");},
+    helpline:()=>{renderHelpline();show("helpline");},
+    safety:()=>{renderSafety();show("safety");},
+    mydocs:()=>{renderDocs();show("mydocs");},
+    learn:()=>{renderLessons();show("lessons");}
+  };
+  if(h.kind==="view"){ (route[h.id]||route.learn)(); return; }
+  if(h.kind==="mandi"){ openMandi(); return; }
+  if(h.kind==="weather"){ openWeather(); return; }
+  if(h.kind==="calc"){ openCalc(); return; }
+  if(h.kind==="remind"){ openRemind(); return; }
+  if(h.kind==="templates"){ openTemplatesView(); return; }
+  CHAT = { id:h.id, history:[] };
+  document.getElementById("chatTitle").childNodes[0].nodeValue = (LANG==="hi"?h.hi:h.en);
+  document.getElementById("chatSub").textContent = LANG==="hi"?h.hsub:h.esub;
+  document.getElementById("chatLog").innerHTML="";
+  document.getElementById("chatChips").innerHTML="";
+  if(h.kind==="photo"){ composer.style.display="none"; renderPhotoIntro(); show("chat"); composer.style.display="none"; return; }
+  renderChips(h.id);
+  show("chat");
+  greet(h.id);
+}
+
+function renderPhotoIntro(){
+  const log=document.getElementById("chatLog");
+  log.innerHTML=`<div class="photo-intro">
+    <div class="lead">${t("ph_lead")}</div>
+    <button class="capbtn read" data-mode="photo_read"><span class="e">📄</span>
+      <span>${t("ph_read")}<small>${t("ph_read2")}</small></span></button>
+    <button class="capbtn cropd" data-mode="photo_crop"><span class="e">🌿</span>
+      <span>${t("ph_crop")}<small>${t("ph_crop2")}</small></span></button>
+    <div class="gallery-link" id="galleryLink">${t("ph_gallery")}</div>
+  </div>`;
+  let pendingMode="photo_read";
+  log.querySelectorAll(".capbtn").forEach(b=>b.onclick=()=>{ pendingMode=b.dataset.mode; cam.dataset.mode=pendingMode; cam.click(); });
+  document.getElementById("galleryLink").onclick=()=>{ gallery.dataset.mode=pendingMode; gallery.click(); };
+}
+function greet(id){
+  const g_hi={ assistant:"नमस्ते! 🙏 बोलिए, मैं किस काम में मदद करूँ?",
+    letter:"मैं आपकी चिट्ठी या अर्ज़ी लिख दूँगा। किसको लिखनी है और किस बारे में?",
+    form:"कोई भी फॉर्म? मुझे बताइए कौन-सा फॉर्म है, मैं एक-एक खाना भरने में मदद करूँगा।",
+    translate:"क्या अनुवाद करना है? हिंदी या अंग्रेज़ी — कुछ भी लिखिए या बोलिए।",
+    crop:"आपकी फसल और दिक्कत बताइए, मैं आसान सलाह दूँगा। 🌱",
+    study:"बच्चे की पढ़ाई में क्या मदद चाहिए? कोई विषय या सवाल बताइए। 📚" };
+  const g_en={ assistant:"Namaste! 🙏 Tell me, how can I help?",
+    letter:"I'll write your letter or application. Who is it for and what about?",
+    form:"Which form? Tell me what it is and I'll help you fill each field.",
+    translate:"What should I translate? Type or speak in Hindi or English.",
+    crop:"Tell me your crop and the problem, I'll give simple advice. 🌱",
+    study:"What study help do you need? Tell me a subject or question. 📚" };
+  addBubble((LANG==="hi"?g_hi:g_en)[id], "ai");
+}
+const CHIPS = {
+  assistant:{hi:["राशन कार्ड कैसे बनवाऊँ?","बिजली बिल की शिकायत","मौसम कैसा रहेगा?"],en:["How to get a ration card?","Electricity bill complaint","Weather today?"]},
+  letter:{hi:["बैंक को अर्ज़ी","छुट्टी का आवेदन","सरपंच को शिकायत"],en:["Letter to bank","Leave application","Complaint to Sarpanch"]},
+  form:{hi:["राशन कार्ड फॉर्म","पेंशन फॉर्म","स्कूल दाखिला फॉर्म"],en:["Ration card form","Pension form","School admission form"]},
+  translate:{hi:["यह अंग्रेज़ी में करो","Translate to Hindi"],en:["Translate to English","हिंदी में करो"]},
+  crop:{hi:["गेहूँ में पीले पत्ते","कब बोऊँ धान?","कम पानी में फसल"],en:["Yellow leaves in wheat","When to sow paddy?","Low-water crops"]},
+  study:{hi:["जोड़ना सिखाओ","छात्रवृत्ति योजना","अंग्रेज़ी कैसे सीखूँ"],en:["Teach addition","Scholarship schemes","How to learn English"]}
+};
+function renderChips(id){
+  const box=document.getElementById("chatChips"); box.innerHTML="";
+  const set=(CHIPS[id]||CHIPS.assistant)[LANG]||[];
+  set.forEach(txt=>{ const c=document.createElement("button"); c.className="chip"; c.textContent=txt;
+    c.onclick=()=>sendMessage(txt); box.appendChild(c); });
+}
+function addBubble(text, who){
+  const log=document.getElementById("chatLog");
+  const b=document.createElement("div"); b.className="bubble "+who;
+  b.textContent=text;
+  if(who==="ai"){
+    const s=document.createElement("button"); s.className="speak"; s.innerHTML=`🔊 ${t("listen")}`;
+    s.onclick=()=>speak(text); b.appendChild(document.createElement("br")); b.appendChild(s);
+    if(["letter","form","translate","study","assistant"].includes(CHAT.id) && text.length>40){
+      const sv=document.createElement("button"); sv.className="save"; sv.innerHTML=`💾 ${t("dc_save")}`;
+      sv.onclick=()=>{ saveDoc(text); sv.innerHTML=`✓ ${t("dc_saved")}`; sv.disabled=true; };
+      b.appendChild(sv);
+    }
+  }
+  log.appendChild(b); b.scrollIntoView({behavior:"smooth",block:"end"});
+  return b;
+}
+function showTyping(){
+  const log=document.getElementById("chatLog");
+  const b=document.createElement("div"); b.className="bubble ai"; b.id="typing";
+  b.innerHTML=`<span class="typing"><i></i><i></i><i></i></span>`;
+  log.appendChild(b); b.scrollIntoView({behavior:"smooth",block:"end"});
+}
+function hideTyping(){ const e=document.getElementById("typing"); if(e) e.remove(); }
+
+async function sendMessage(text){
+  text=(text||"").trim(); if(!text) return;
+  document.getElementById("chatChips").innerHTML="";
+  addBubble(text,"me");
+  CHAT.history.push({role:"user",content:text});
+  if(!navigator.onLine){ addBubble(t("needNet"),"ai"); return; }
+  showTyping();
+  try{
+    const reply = await askAI(PROMPTS[CHAT.id]||PROMPTS.assistant, CHAT.history);
+    hideTyping();
+    const out = reply || t("speakErr");
+    CHAT.history.push({role:"assistant",content:out});
+    addBubble(out,"ai");
+    speak(out);
+  }catch(e){
+    hideTyping(); addBubble(t("speakErr"),"ai");
+  }
+}
+
+/* ---- 11b. Helpline view ------------------------------------------- */
+function renderHelpline(){
+  const l=document.getElementById("helplineList"); l.innerHTML="";
+  HELPLINE.forEach(h=>{
+    const name=LANG==="hi"?h.hi:h.en; const shown=h.show||h.num;
+    const a=document.createElement("a"); a.className="hl"; a.href="tel:"+h.num;
+    a.innerHTML=`<span class="e">${h.em}</span>
+      <span><span class="who">${name}</span><br><span class="no">${shown}</span></span>
+      <span class="call">📞</span>`;
+    l.appendChild(a);
+  });
+}
+
+/* ---- 11c. Photo: resize + send to vision --------------------------- */
+const cam=document.getElementById("cam"), gallery=document.getElementById("gallery");
+function resizeImage(file, maxDim, cb){
+  const img=new Image();
+  img.onload=()=>{
+    let {width:w,height:h}=img;
+    if(Math.max(w,h)>maxDim){ const s=maxDim/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
+    const c=document.createElement("canvas"); c.width=w; c.height=h;
+    c.getContext("2d").drawImage(img,0,0,w,h);
+    const dataUrl=c.toDataURL("image/jpeg",0.82);
+    cb(dataUrl, dataUrl.split(",")[1]);
+    URL.revokeObjectURL(img.src);
+  };
+  img.onerror=()=>toast(t("speakErr"));
+  img.src=URL.createObjectURL(file);
+}
+function handlePick(inputEl){
+  const f=inputEl.files&&inputEl.files[0]; if(!f) return;
+  const mode=inputEl.dataset.mode||"photo_read";
+  resizeImage(f, 1280, (dataUrl, base64)=>{ sendImage(dataUrl, base64, mode); });
+  inputEl.value="";
+}
+cam.addEventListener("change",()=>handlePick(cam));
+gallery.addEventListener("change",()=>handlePick(gallery));
+
+function addImageBubble(dataUrl){
+  const log=document.getElementById("chatLog");
+  const b=document.createElement("div"); b.className="bubble me";
+  const im=document.createElement("img"); im.src=dataUrl; b.appendChild(im);
+  log.appendChild(b); b.scrollIntoView({behavior:"smooth",block:"end"});
+}
+function photoAgainChip(mode){
+  const box=document.getElementById("chatChips"); box.innerHTML="";
+  const c=document.createElement("button"); c.className="chip"; c.textContent=t("ph_again");
+  c.onclick=()=>{ cam.dataset.mode=mode; cam.click(); };
+  box.appendChild(c);
+}
+async function sendImage(dataUrl, base64, mode){
+  CHAT = { id:mode, history:CHAT.history||[] };
+  document.getElementById("chatChips").innerHTML="";
+  addImageBubble(dataUrl);
+  const ask = mode==="photo_crop"
+    ? (LANG==="hi"?"मेरी फसल की यह तस्वीर देखिए, क्या दिक्कत है?":"Look at my crop photo, what is the problem?")
+    : (LANG==="hi"?"इस तस्वीर में क्या लिखा है? आसान भाषा में समझाइए।":"What does this photo say? Explain in simple words.");
+  if(!navigator.onLine){ addBubble(t("needNet"),"ai"); photoAgainChip(mode); return; }
+  CHAT.history.push({ role:"user", content:[
+    { type:"image", source:{ type:"base64", media_type:"image/jpeg", data:base64 } },
+    { type:"text", text:ask }
+  ]});
+  showTyping();
+  try{
+    const reply=await askAI(PROMPTS[mode], CHAT.history);
+    hideTyping();
+    const out=reply||t("speakErr");
+    CHAT.history.push({role:"assistant",content:out});
+    addBubble(out,"ai"); speak(out); photoAgainChip(mode);
+  }catch(e){ hideTyping(); addBubble(t("speakErr"),"ai"); photoAgainChip(mode); }
+}
+
+/* ---- 11d. Safety pack --------------------------------------------- */
+function renderSafety(){
+  const l=document.getElementById("safetyList"); l.innerHTML="";
+  SAFETY.forEach(s=>{
+    const trick=LANG==="hi"?s.trickHi:s.trickEn, rule=LANG==="hi"?s.ruleHi:s.ruleEn, name=LANG==="hi"?s.hi:s.en;
+    const d=document.createElement("div"); d.className="sf";
+    d.innerHTML=`<h3>${s.em} ${name}</h3><p class="trick">${trick}</p>
+      <div class="rule">✅ ${rule}</div>`;
+    const sp=document.createElement("button"); sp.className="speak"; sp.innerHTML=`🔊 ${t("listen")}`;
+    sp.onclick=()=>speak(`${name}. ${trick} ${rule}`);
+    d.querySelector(".rule").after(sp);
+    l.appendChild(d);
+  });
+}
+
+/* ---- 11e. Mandi prices -------------------------------------------- */
+const MANDI_KEY = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"; // public demo key — get your own free at data.gov.in
+const MANDI_BASE = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
+let mandiInit=false;
+function openMandi(){
+  if(!mandiInit){
+    const st=document.getElementById("mdState"), cr=document.getElementById("mdCrop");
+    MD_STATES.forEach(s=>st.add(new Option(s,s)));
+    MD_CROPS.forEach(c=>cr.add(new Option(c,c)));
+    document.getElementById("mdGo").onclick=loadMandi;
+    mandiInit=true;
+  }
+  show("mandi");
+}
+async function loadMandi(){
+  const state=document.getElementById("mdState").value;
+  const crop=document.getElementById("mdCrop").value;
+  const cropWord=crop.replace(/\(.*\)/,"").trim();
+  const box=document.getElementById("mandiResult");
+  box.innerHTML=`<div class="empty">${t("md_loading")}</div>`;
+  try{
+    const url=`${MANDI_BASE}?api-key=${MANDI_KEY}&format=json&limit=300&filters[state]=${encodeURIComponent(state)}`;
+    const res=await fetch(url); if(!res.ok) throw 0;
+    const data=await res.json();
+    let rows=(data.records||[]).map(r=>({
+      market:r.market||r.Market||"", commodity:r.commodity||r.Commodity||"",
+      modal:+(r.modal_price||r.Modal_Price||0), min:+(r.min_price||r.Min_Price||0), max:+(r.max_price||r.Max_Price||0)
+    })).filter(r=>r.commodity.toLowerCase().includes(cropWord.toLowerCase()) && r.modal>0);
+    if(rows.length) renderMandi(rows, crop, false);
+    else throw 1;
+  }catch(e){
+    renderMandi(MD_SAMPLE.map(r=>({...r,commodity:crop})), crop, true);
+  }
+}
+function renderMandi(rows, crop, sample){
+  const box=document.getElementById("mandiResult"); box.innerHTML="";
+  if(sample) box.innerHTML=`<div class="sample-tag">⚠️ ${t("md_sample")}</div>`;
+  rows.slice(0,20).forEach(r=>{
+    const d=document.createElement("div"); d.className="price";
+    d.innerHTML=`<div class="top"><span class="mkt">📍 ${r.market}</span><span class="modal">₹${r.modal.toLocaleString("en-IN")}</span></div>
+      <div class="rng">${crop} · कम ₹${r.min||"—"} – ज़्यादा ₹${r.max||"—"} /क्विंटल</div>`;
+    box.appendChild(d);
+  });
+  if(!rows.length) box.innerHTML=`<div class="empty">${t("md_none")}</div>`;
+}
+
+/* ---- 11f. Weather + advisory -------------------------------------- */
+function wmo(c){
+  if(c===0) return {em:"☀️",hi:"साफ़ आसमान",en:"Clear sky"};
+  if(c<=2) return {em:"🌤️",hi:"हल्के बादल",en:"Partly cloudy"};
+  if(c===3) return {em:"☁️",hi:"बादल",en:"Cloudy"};
+  if(c<=48) return {em:"🌫️",hi:"कोहरा",en:"Fog"};
+  if(c<=57) return {em:"🌦️",hi:"हल्की बूँदाबाँदी",en:"Drizzle"};
+  if(c<=67) return {em:"🌧️",hi:"बारिश",en:"Rain"};
+  if(c<=77) return {em:"❄️",hi:"बर्फ़",en:"Snow"};
+  if(c<=82) return {em:"🌧️",hi:"तेज़ बारिश",en:"Rain showers"};
+  if(c<=99) return {em:"⛈️",hi:"आँधी-तूफ़ान",en:"Thunderstorm"};
+  return {em:"🌡️",hi:"मौसम",en:"Weather"};
+}
+let wxInit=false;
+function openWeather(){
+  if(!wxInit){
+    document.getElementById("wxSearch").placeholder=t("wx_ph");
+    document.getElementById("wxSearchBtn").onclick=async()=>{
+      const q=document.getElementById("wxSearch").value.trim(); if(!q) return;
+      const box=document.getElementById("wxResult"); box.innerHTML=`<div class="empty">${t("wx_loading")}</div>`;
+      try{
+        const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=${LANG}`);
+        const gd=await g.json();
+        if(!gd.results||!gd.results.length){ box.innerHTML=`<div class="empty">${t("wx_geo")}</div>`; return; }
+        const p=gd.results[0]; loadWeather(p.latitude,p.longitude,p.name);
+      }catch(e){ box.innerHTML=`<div class="empty">${t("wx_err")}</div>`; }
+    };
+    document.getElementById("wxLocate").onclick=()=>{
+      const box=document.getElementById("wxResult"); box.innerHTML=`<div class="empty">${t("wx_loading")}</div>`;
+      if(!navigator.geolocation){ box.innerHTML=`<div class="empty">${t("wx_geo")}</div>`; return; }
+      navigator.geolocation.getCurrentPosition(
+        pos=>loadWeather(pos.coords.latitude,pos.coords.longitude,LANG==="hi"?"मेरी जगह":"My location"),
+        ()=>{ box.innerHTML=`<div class="empty">${t("wx_geo")}</div>`; });
+    };
+    wxInit=true;
+  }
+  show("weather");
+  const saved=store.get("wxLoc");
+  if(saved){ try{ const p=JSON.parse(saved); loadWeather(p.lat,p.lon,p.name);}catch(e){} }
+}
+async function loadWeather(lat,lon,label){
+  const box=document.getElementById("wxResult"); box.innerHTML=`<div class="empty">${t("wx_loading")}</div>`;
+  store.set("wxLoc",JSON.stringify({lat,lon,name:label}));
+  document.getElementById("wxPlace").textContent=label;
+  try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`+
+      `&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`+
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max`+
+      `&timezone=auto&forecast_days=4`;
+    const res=await fetch(u); const d=await res.json();
+    const cur=d.current, w=wmo(cur.weather_code);
+    let html=`<div class="wx-now"><div class="big">${Math.round(cur.temperature_2m)}°</div>
+       <div class="desc">${w.em} ${LANG==="hi"?w.hi:w.en}</div>
+       <div class="sub">💧 ${cur.relative_humidity_2m}% · 💨 ${Math.round(cur.wind_speed_10m)} km/h</div></div>`;
+    const adv=weatherAdvice(d.daily, cur);
+    adv.forEach(a=>html+=`<div class="wx-advice"><span>${a.em}</span><span>${a.text}</span></div>`);
+    const days=["रवि","सोम","मंगल","बुध","गुरु","शुक्र","शनि"], daysEn=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    html+=`<div class="wx-days">`;
+    d.daily.time.forEach((dt,i)=>{
+      const wd=new Date(dt).getDay(); const dw=wmo(d.daily.weather_code[i]);
+      html+=`<div class="wx-day"><div class="d">${i===0?(LANG==="hi"?"आज":"Today"):(LANG==="hi"?days[wd]:daysEn[wd])}</div>
+        <div class="em">${dw.em}</div>
+        <div class="tmp">${Math.round(d.daily.temperature_2m_max[i])}°/${Math.round(d.daily.temperature_2m_min[i])}°</div>
+        <div class="d">💧${d.daily.precipitation_probability_max[i]??0}%</div></div>`;
+    });
+    html+=`</div>`;
+    box.innerHTML=html;
+  }catch(e){ box.innerHTML=`<div class="empty">${t("wx_err")}</div>`; }
+}
+function weatherAdvice(daily, cur){
+  const out=[]; const rain=Math.max(daily.precipitation_probability_max[0]||0, daily.precipitation_probability_max[1]||0);
+  if(rain>=60) out.push({em:"🌧️",text:LANG==="hi"?"अगले दो दिन बारिश के आसार — दवा/खाद का छिड़काव टाल दें।":"Rain likely in next 2 days — postpone spraying."});
+  else if(rain<=20 && (cur.temperature_2m>=20)) out.push({em:"🌿",text:LANG==="hi"?"मौसम सूखा है — छिड़काव और कटाई के लिए ठीक दिन।":"Dry weather — good day for spraying and harvest."});
+  if(cur.temperature_2m>=38) out.push({em:"🥵",text:LANG==="hi"?"बहुत गर्मी — सुबह-शाम काम करें, पानी पीते रहें, फसल को पानी दें।":"Very hot — work morning/evening, drink water, irrigate crops."});
+  if((daily.temperature_2m_min[0]??99)<=4) out.push({em:"🥶",text:LANG==="hi"?"पाला पड़ सकता है — कोमल फसल को ढकें, शाम को हल्की सिंचाई करें।":"Frost possible — cover tender crops, light evening irrigation."});
+  if(!out.length) out.push({em:"👍",text:LANG==="hi"?"मौसम सामान्य है।":"Weather looks normal."});
+  return out;
+}
+
+/* ---- 11g. Calculator ---------------------------------------------- */
+let calcTab="area", bighaSqft=+(store.get("bighaSqft")||0);
+function openCalc(){
+  document.querySelectorAll("#calcTabs .tab").forEach(b=>{
+    b.onclick=()=>{ calcTab=b.dataset.tab;
+      document.querySelectorAll("#calcTabs .tab").forEach(x=>x.classList.toggle("on",x===b)); renderCalc(); };
+  });
+  calcTab="area"; document.querySelectorAll("#calcTabs .tab").forEach(x=>x.classList.toggle("on",x.dataset.tab==="area"));
+  renderCalc(); show("calc");
+}
+function row(label,val){ return `<div class="price"><div class="top"><span class="mkt">${label}</span><span class="modal">${val}</span></div></div>`; }
+function renderCalc(){
+  const body=document.getElementById("calcBody");
+  if(calcTab==="area"){
+    body.innerHTML=`<input id="caVal" class="pick" type="number" inputmode="decimal" placeholder="${LANG==="hi"?"मात्रा":"Amount"}" style="margin-bottom:10px;width:100%">
+      <select id="caUnit" class="pick" style="width:100%;margin-bottom:8px">
+        <option value="4046.856">${LANG==="hi"?"एकड़":"Acre"}</option>
+        <option value="10000">${LANG==="hi"?"हेक्टेयर":"Hectare"}</option>
+        <option value="101.171">${LANG==="hi"?"गुंठा":"Guntha"}</option>
+        <option value="0.092903">${LANG==="hi"?"वर्ग फुट":"Sq feet"}</option>
+        <option value="1">${LANG==="hi"?"वर्ग मीटर":"Sq metre"}</option>
+        <option value="bigha">${LANG==="hi"?"बीघा":"Bigha"}</option>
+      </select>
+      <div class="note">${LANG==="hi"?"बीघा हर इलाके में अलग होता है। नीचे अपने इलाके का 1 बीघा = कितने वर्ग फुट, डालें।":"Bigha differs by region. Enter your local 1 bigha = how many sq ft below."}
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">1 ${LANG==="hi"?"बीघा":"bigha"} =
+        <input id="caBigha" class="pick" type="number" inputmode="decimal" value="${bighaSqft||""}" placeholder="${LANG==="hi"?"वर्ग फुट":"sq ft"}" style="padding:8px 10px"> ${LANG==="hi"?"वर्ग फुट":"sq ft"}</div></div>
+      <div id="caOut"></div>`;
+    const calc=()=>{
+      const v=+document.getElementById("caVal").value||0; const sel=document.getElementById("caUnit").value;
+      bighaSqft=+document.getElementById("caBigha").value||0; store.set("bighaSqft",bighaSqft);
+      const bighaSqm=bighaSqft*0.092903;
+      const sqm = sel==="bigha" ? v*bighaSqm : v*(+sel);
+      const out=document.getElementById("caOut");
+      out.innerHTML = row(LANG==="hi"?"एकड़":"Acre",(sqm/4046.856).toFixed(3))
+        + row(LANG==="hi"?"हेक्टेयर":"Hectare",(sqm/10000).toFixed(3))
+        + row(LANG==="hi"?"गुंठा":"Guntha",(sqm/101.171).toFixed(2))
+        + row(LANG==="hi"?"वर्ग फुट":"Sq feet",Math.round(sqm/0.092903).toLocaleString("en-IN"))
+        + row(LANG==="hi"?"वर्ग मीटर":"Sq metre",Math.round(sqm).toLocaleString("en-IN"))
+        + (bighaSqm? row(LANG==="hi"?"बीघा":"Bigha",(sqm/bighaSqm).toFixed(2)):"");
+    };
+    ["caVal","caUnit","caBigha"].forEach(id=>document.getElementById(id).addEventListener("input",calc));
+  }
+  else if(calcTab==="weight"){
+    body.innerHTML=`<input id="cwVal" class="pick" type="number" inputmode="decimal" placeholder="${LANG==="hi"?"मात्रा":"Amount"}" style="margin-bottom:10px;width:100%">
+      <select id="cwUnit" class="pick" style="width:100%;margin-bottom:8px">
+        <option value="100">${LANG==="hi"?"क्विंटल":"Quintal"}</option>
+        <option value="1">${LANG==="hi"?"किलो":"Kg"}</option>
+        <option value="1000">${LANG==="hi"?"टन":"Tonne"}</option>
+        <option value="0.001">${LANG==="hi"?"ग्राम":"Gram"}</option>
+      </select><div id="cwOut"></div>`;
+    const calc=()=>{
+      const v=+document.getElementById("cwVal").value||0; const kg=v*(+document.getElementById("cwUnit").value);
+      document.getElementById("cwOut").innerHTML =
+        row(LANG==="hi"?"क्विंटल":"Quintal",(kg/100).toFixed(3))
+        + row(LANG==="hi"?"किलो":"Kg",kg.toLocaleString("en-IN"))
+        + row(LANG==="hi"?"टन":"Tonne",(kg/1000).toFixed(3))
+        + row(LANG==="hi"?"ग्राम":"Gram",(kg*1000).toLocaleString("en-IN"));
+    };
+    ["cwVal","cwUnit"].forEach(id=>document.getElementById(id).addEventListener("input",calc));
+  }
+  else {
+    body.innerHTML=`<input id="clP" class="pick" type="number" inputmode="decimal" placeholder="${LANG==="hi"?"उधार राशि (₹)":"Loan amount (₹)"}" style="width:100%;margin-bottom:10px">
+      <input id="clR" class="pick" type="number" inputmode="decimal" placeholder="${LANG==="hi"?"ब्याज दर % (साल का)":"Interest rate % (yearly)"}" style="width:100%;margin-bottom:10px">
+      <input id="clY" class="pick" type="number" inputmode="decimal" placeholder="${LANG==="hi"?"कितने साल":"Years"}" style="width:100%;margin-bottom:8px">
+      <div id="clOut"></div>
+      <div class="note">${LANG==="hi"?"यह अनुमान है। साहूकार की ऊँची दर से सावधान रहें — बैंक/सहकारी से तुलना ज़रूर करें।":"This is an estimate. Beware high moneylender rates — always compare with a bank/co-op."}</div>`;
+    const calc=()=>{
+      const P=+document.getElementById("clP").value||0, R=+document.getElementById("clR").value||0, Y=+document.getElementById("clY").value||0;
+      if(!P||!R||!Y){ document.getElementById("clOut").innerHTML=""; return; }
+      const si=P*R*Y/100, total=P+si;
+      const r=R/1200, n=Y*12; const emi = r? P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1) : P/n;
+      document.getElementById("clOut").innerHTML =
+        row(LANG==="hi"?"कुल ब्याज":"Total interest","₹"+Math.round(si).toLocaleString("en-IN"))
+        + row(LANG==="hi"?"कुल चुकाना":"Total payable","₹"+Math.round(total).toLocaleString("en-IN"))
+        + row(LANG==="hi"?"हर महीने (EMI)":"Monthly (EMI)","₹"+Math.round(emi).toLocaleString("en-IN"));
+    };
+    ["clP","clR","clY"].forEach(id=>document.getElementById(id).addEventListener("input",calc));
+  }
+}
+
+/* ---- 11h. Reminders ----------------------------------------------- */
+function getReminders(){ try{ return JSON.parse(store.get("reminders")||"[]"); }catch(e){ return []; } }
+function setReminders(a){ store.set("reminders",JSON.stringify(a)); }
+function openRemind(){
+  const rt=document.getElementById("rmText"); rt.placeholder=t("rm_ph");
+  document.getElementById("rmAdd").onclick=addReminder;
+  document.getElementById("rmMic").onclick=()=>startListening((txt,f)=>{ rt.value=txt; },[document.getElementById("rmMic")]);
+  renderReminders(); show("remind");
+}
+function addReminder(){
+  const text=document.getElementById("rmText").value.trim();
+  const time=document.getElementById("rmTime").value;
+  const daily=document.getElementById("rmDaily").checked;
+  if(!text||!time){ toast(t("rm_need")); return; }
+  if("Notification" in window && Notification.permission==="default") Notification.requestPermission();
+  const a=getReminders(); a.push({id:Date.now(),text,time,daily,lastFired:""}); setReminders(a);
+  document.getElementById("rmText").value=""; document.getElementById("rmTime").value="";
+  document.getElementById("rmDaily").checked=false;
+  toast(t("rm_saved")); renderReminders();
+}
+function renderReminders(){
+  const l=document.getElementById("rmList"); const a=getReminders(); l.innerHTML="";
+  if(!a.length){ l.innerHTML=`<div class="empty">${t("rm_none")}</div>`; return; }
+  a.sort((x,y)=>x.time.localeCompare(y.time)).forEach(r=>{
+    const d=document.createElement("div"); d.className="rm";
+    d.innerHTML=`<span class="clk">${r.time}</span>
+      <span><span class="txt">${r.text}</span><br><span class="when">${r.daily?(LANG==="hi"?"रोज़":"Daily"):(LANG==="hi"?"एक बार":"Once")}</span></span>
+      <button class="del">🗑</button>`;
+    d.querySelector(".del").onclick=()=>{ setReminders(getReminders().filter(x=>x.id!==r.id)); renderReminders(); };
+    l.appendChild(d);
+  });
+}
+function checkReminders(){
+  const now=new Date(); const hhmm=String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
+  const today=now.toISOString().slice(0,10); let a=getReminders(), changed=false;
+  a.forEach(r=>{
+    if(r.time===hhmm && r.lastFired!==today){
+      r.lastFired=today; changed=true;
+      const msg=(LANG==="hi"?"याद दिलाना: ":"Reminder: ")+r.text;
+      try{ if("Notification" in window && Notification.permission==="granted") new Notification("AI Village",{body:r.text}); }catch(e){}
+      speak(msg); toast("⏰ "+r.text);
+    }
+  });
+  if(changed) setReminders(a);
+}
+
+/* ---- 11i. My papers (saved docs) ---------------------------------- */
+function getDocs(){ try{ return JSON.parse(store.get("mydocs")||"[]"); }catch(e){ return []; } }
+function setDocs(a){ store.set("mydocs",JSON.stringify(a)); }
+function saveDoc(text){
+  const a=getDocs(); const title=text.split("\n")[0].slice(0,40);
+  a.unshift({id:Date.now(),title,text,date:new Date().toLocaleDateString()}); setDocs(a);
+}
+function renderDocs(){
+  const l=document.getElementById("docsList"); const a=getDocs(); l.innerHTML="";
+  if(!a.length){ l.innerHTML=`<div class="empty">${t("dc_none")}</div>`; return; }
+  a.forEach(doc=>{
+    const d=document.createElement("div"); d.className="doc";
+    d.innerHTML=`<h3>📄 ${doc.title||"—"}</h3><div class="prev">${doc.text.replace(/</g,"&lt;")}</div>
+      <div class="acts">
+        <button class="mini ask">${t("dc_open")}</button>
+        <button class="mini listen">🔊 ${t("listen")}</button>
+        <button class="mini link" style="background:#EEF1FA">📋 ${t("dc_copy")}</button>
+        <button class="mini" style="background:#FBE7DF;color:var(--brick)">🗑 ${t("dc_del")}</button>
+      </div>`;
+    const [openB,listenB,copyB,delB]=d.querySelectorAll(".acts button");
+    openB.onclick=()=>{ const p=d.querySelector(".prev"); p.style.maxHeight=p.style.maxHeight==="none"?"46px":"none"; };
+    listenB.onclick=()=>speak(doc.text);
+    copyB.onclick=async()=>{ try{ await navigator.clipboard.writeText(doc.text); toast(t("dc_copied")); }catch(e){ toast(t("dc_copied")); } };
+    delB.onclick=()=>{ setDocs(getDocs().filter(x=>x.id!==doc.id)); renderDocs(); };
+    l.appendChild(d);
+  });
+}
+
+/* ---- re-render active view on language switch ---------------------- */
+function reRenderActive(){
+  if(views.schemes.classList.contains("active")) renderSchemes();
+  if(views.lessons.classList.contains("active")) renderLessons();
+  if(views.helpline.classList.contains("active")) renderHelpline();
+  if(views.safety.classList.contains("active")) renderSafety();
+  if(views.mydocs.classList.contains("active")) renderDocs();
+  if(views.remind.classList.contains("active")){ document.getElementById("rmText").placeholder=t("rm_ph"); renderReminders(); }
+  if(views.calc.classList.contains("active")) renderCalc();
+  if(views.templates.classList.contains("active")) renderTemplatesList();
+  if(views.tform.classList.contains("active") && CURRENT_TPL) openTemplate(CURRENT_TPL, CURRENT_VALS);
+  if(views.weather.classList.contains("active")){ const s=store.get("wxLoc"); if(s){try{const p=JSON.parse(s);loadWeather(p.lat,p.lon,p.name);}catch(e){}} }
+}
+
+/* ---- 11j. Offline letter / application templates ------------------ */
+function todayStr(){ const d=new Date(),p=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); }
+function fmtDate(iso){ if(!iso) return ""; const a=iso.split("-"); return a.length===3? a[2]+"/"+a[1]+"/"+a[0] : iso; }
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function escA(s){ return (s||"").replace(/"/g,"&quot;"); }
+function getProfile(){ try{ return JSON.parse(store.get("profile")||"{}"); }catch(e){ return {}; } }
+function setProfile(p){ store.set("profile",JSON.stringify(p)); }
+function clean(arr){ return arr.filter(x=>x!==null&&x!==undefined&&String(x).trim()!==""); }
+
+function fmtHi({to, subject, body, name, village, mobile, date}){
+  return clean([
+    "सेवा में,", ...to, "",
+    "विषय: "+subject, "",
+    "महोदय/महोदया,", "",
+    ...body, "", "धन्यवाद।", "",
+    "भवदीय/भवदीया,", name, village||"",
+    mobile? "मोबाइल: "+mobile : "", date? "दिनांक: "+fmtDate(date) : ""
+  ]).join("\n");
+}
+function fmtEn({to, subject, body, name, village, mobile, date}){
+  return clean([
+    "To,", ...to, "",
+    "Subject: "+subject, "",
+    "Respected Sir/Madam,", "",
+    ...body, "", "Thank you.", "",
+    "Yours faithfully,", name, village||"",
+    mobile? "Mobile: "+mobile : "", date? "Date: "+fmtDate(date) : ""
+  ]).join("\n");
+}
+
+// reusable field descriptors
+const FN  = {id:"name",     hi:"आपका पूरा नाम", en:"Your full name", req:true};
+const FG  = {id:"guardian", hi:"पिता/पति का नाम", en:"Father's/Husband's name"};
+const FV  = {id:"village",  hi:"गाँव व पता", en:"Village & address"};
+const FM  = {id:"mobile",   hi:"मोबाइल नंबर", en:"Mobile number"};
+const FD  = {id:"date",     hi:"दिनांक", en:"Date", type:"date"};
+
+const TEMPLATES = [
+ { id:"leave", emoji:"📅", hi:"छुट्टी का आवेदन", en:"Leave application",
+   fields:[ {id:"to",hi:"किसको (जैसे: प्रधानाध्यापक महोदय)",en:"To whom (e.g. The Principal)",req:true},
+     {id:"org",hi:"विद्यालय/कार्यालय का नाम",en:"School/Office name"},
+     FN, FG, {id:"from",hi:"छुट्टी कब से",en:"Leave from",type:"date",req:true},
+     {id:"to2",hi:"छुट्टी कब तक",en:"Leave to",type:"date",req:true},
+     {id:"reason",hi:"छुट्टी का कारण",en:"Reason for leave",type:"textarea",req:true}, FV, FM, FD ],
+   build(v){ const hi=LANG==="hi"; const f=fmtDate;
+     if(hi) return fmtHi({to:clean([v.to,v.org]), subject:`${f(v.from)} से ${f(v.to2)} तक अवकाश हेतु।`,
+       body:[`सविनय निवेदन है कि मैं ${v.name}${v.guardian?", "+v.guardian+" का/की पुत्र/पुत्री":""} हूँ। ${v.reason} के कारण मुझे ${f(v.from)} से ${f(v.to2)} तक अवकाश की आवश्यकता है।`,
+             `अतः आपसे विनम्र निवेदन है कि उक्त अवधि का अवकाश स्वीकृत करने की कृपा करें।`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date});
+     return fmtEn({to:clean([v.to,v.org]), subject:`Leave from ${f(v.from)} to ${f(v.to2)}.`,
+       body:[`I, ${v.name}${v.guardian?", child of "+v.guardian:""}, request leave from ${f(v.from)} to ${f(v.to2)} due to: ${v.reason}.`,
+             `Kindly grant me leave for the above period.`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date}); } },
+
+ { id:"ration", emoji:"🍚", hi:"राशन कार्ड की अर्ज़ी", en:"Ration card request",
+   fields:[ {id:"to",hi:"अधिकारी",en:"Officer",def_hi:"खाद्य आपूर्ति अधिकारी",def_en:"The Food Supply Officer"},
+     FN, FG, FV, {id:"members",hi:"परिवार के सदस्यों की संख्या",en:"Number of family members"},
+     {id:"purpose",hi:"किस काम के लिए",en:"Purpose",type:"select",
+       opts_hi:["नया राशन कार्ड बनवाना","कार्ड में नाम जोड़ना","कार्ड में नाम हटाना","कार्ड में सुधार"],
+       opts_en:["New ration card","Add a name to card","Remove a name from card","Correction in card"]}, FM, FD ],
+   build(v){ const hi=LANG==="hi";
+     if(hi) return fmtHi({to:[v.to||"खाद्य आपूर्ति अधिकारी"], subject:`${v.purpose} हेतु आवेदन।`,
+       body:[`सविनय निवेदन है कि मैं ${v.name}${v.guardian?", पिता/पति "+v.guardian:""}, निवासी ${v.village} हूँ।`,
+             `मेरे परिवार में ${v.members||"—"} सदस्य हैं। कृपया ${v.purpose} की कार्यवाही करने की कृपा करें। आवश्यक दस्तावेज़ साथ संलग्न हैं।`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date});
+     return fmtEn({to:[v.to||"The Food Supply Officer"], subject:`Application for: ${v.purpose}.`,
+       body:[`I, ${v.name}${v.guardian?", child/spouse of "+v.guardian:""}, resident of ${v.village}, have ${v.members||"—"} members in my family.`,
+             `Kindly process my request for "${v.purpose}". Required documents are attached.`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date}); } },
+
+ { id:"sarpanch", emoji:"🏘️", hi:"सरपंच को शिकायत", en:"Complaint to Sarpanch",
+   fields:[ {id:"village",hi:"ग्राम पंचायत का नाम",en:"Gram Panchayat name",req:true}, FN, FG,
+     {id:"problem",hi:"समस्या क्या है",en:"What is the problem",type:"textarea",req:true},
+     {id:"place",hi:"समस्या कहाँ है",en:"Where is the problem"}, FM, FD ],
+   build(v){ const hi=LANG==="hi";
+     if(hi) return fmtHi({to:["सरपंच महोदय,","ग्राम पंचायत "+v.village], subject:`गाँव की समस्या के समाधान हेतु।`,
+       body:[`निवेदन है कि मैं ${v.name}, निवासी ${v.village} हूँ।`,
+             `हमारे गाँव${v.place?" ("+v.place+")":""} में यह समस्या है: ${v.problem}.`,
+             `कृपया इस समस्या का शीघ्र समाधान कराने की कृपा करें, जिससे गाँववासियों को राहत मिल सके।`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date});
+     return fmtEn({to:["The Sarpanch,","Gram Panchayat "+v.village], subject:`Request to solve a village problem.`,
+       body:[`I, ${v.name}, resident of ${v.village}, wish to report a problem${v.place?" at "+v.place:""}: ${v.problem}.`,
+             `Kindly arrange an early solution so that the villagers get relief.`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date}); } },
+
+ { id:"bank", emoji:"🏦", hi:"बैंक को अर्ज़ी", en:"Bank application",
+   fields:[ {id:"bank",hi:"बैंक का नाम",en:"Bank name",req:true}, {id:"branch",hi:"शाखा",en:"Branch"},
+     {id:"account",hi:"खाता संख्या (यदि हो)",en:"Account number (if any)"},
+     {id:"purpose",hi:"किस काम के लिए",en:"Purpose",type:"select",
+       opts_hi:["पासबुक खो गई / नई पासबुक","मोबाइल नंबर बदलना","पता बदलना","खाता चालू कराना","अन्य"],
+       opts_en:["Lost passbook / new passbook","Change mobile number","Change address","Reactivate account","Other"]},
+     {id:"details",hi:"और जानकारी (यदि हो)",en:"More details (if any)",type:"textarea"}, FN, FM, FD ],
+   build(v){ const hi=LANG==="hi";
+     if(hi) return fmtHi({to:["शाखा प्रबंधक महोदय,", v.bank+(v.branch?", "+v.branch+" शाखा":"")], subject:`${v.purpose} हेतु।`,
+       body:[`सविनय निवेदन है कि मैं ${v.name}, आपके बैंक का खाताधारक हूँ${v.account?" (खाता संख्या: "+v.account+")":""}.`,
+             `${v.purpose}${v.details?" — "+v.details:""}. कृपया आवश्यक कार्यवाही करने की कृपा करें।`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date});
+     return fmtEn({to:["The Branch Manager,", v.bank+(v.branch?", "+v.branch+" branch":"")], subject:`Regarding: ${v.purpose}.`,
+       body:[`I, ${v.name}, am an account holder at your bank${v.account?" (Account no: "+v.account+")":""}.`,
+             `${v.purpose}${v.details?" — "+v.details:""}. Kindly do the needful.`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date}); } },
+
+ { id:"scholarship", emoji:"🎓", hi:"छात्रवृत्ति आवेदन", en:"Scholarship application",
+   fields:[ {id:"to",hi:"किसको",en:"To whom",def_hi:"प्रधानाध्यापक महोदय / संबंधित अधिकारी",def_en:"The Principal / Concerned Officer"},
+     {id:"school",hi:"विद्यालय/कॉलेज का नाम",en:"School/College name",req:true}, FN, FG,
+     {id:"course",hi:"कक्षा / कोर्स",en:"Class / Course"},
+     {id:"income",hi:"परिवार की वार्षिक आय (यदि पता हो)",en:"Family yearly income (if known)"}, FM, FD ],
+   build(v){ const hi=LANG==="hi";
+     if(hi) return fmtHi({to:[v.to||"प्रधानाध्यापक महोदय"], subject:`छात्रवृत्ति हेतु आवेदन।`,
+       body:[`सविनय निवेदन है कि मैं ${v.name}${v.guardian?", पिता/पति "+v.guardian:""}, ${v.school} में ${v.course||"अध्ययनरत"} का विद्यार्थी हूँ।`,
+             `मेरे परिवार की आर्थिक स्थिति कमज़ोर है${v.income?" (वार्षिक आय लगभग ₹"+v.income+")":""}, जिससे पढ़ाई का खर्च उठाना कठिन है।`,
+             `अतः आपसे निवेदन है कि मुझे छात्रवृत्ति प्रदान करने की कृपा करें ताकि मैं अपनी पढ़ाई जारी रख सकूँ।`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date});
+     return fmtEn({to:[v.to||"The Principal"], subject:`Application for scholarship.`,
+       body:[`I, ${v.name}${v.guardian?", child of "+v.guardian:""}, am a student of ${v.course||"this institution"} at ${v.school}.`,
+             `My family's financial condition is weak${v.income?" (yearly income about ₹"+v.income+")":""}, making it hard to bear study costs.`,
+             `Kindly grant me a scholarship so that I can continue my education.`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date}); } },
+
+ { id:"pension", emoji:"👵", hi:"पेंशन के लिए आवेदन", en:"Pension application",
+   fields:[ {id:"type",hi:"पेंशन का प्रकार",en:"Pension type",type:"select",
+       opts_hi:["वृद्धावस्था पेंशन","विधवा पेंशन","दिव्यांग पेंशन"], opts_en:["Old-age pension","Widow pension","Disability pension"]},
+     FN, FG, {id:"age",hi:"उम्र",en:"Age"}, {id:"village",hi:"गाँव व पता",en:"Village & address",req:true}, FM, FD ],
+   build(v){ const hi=LANG==="hi";
+     if(hi) return fmtHi({to:["समाज कल्याण अधिकारी,", v.village], subject:`${v.type} हेतु आवेदन।`,
+       body:[`सविनय निवेदन है कि मैं ${v.name}${v.age?", उम्र "+v.age+" वर्ष":""}, निवासी ${v.village} हूँ।`,
+             `मैं ${v.type} का/की पात्र हूँ और मुझे आर्थिक सहायता की आवश्यकता है।`,
+             `अतः आपसे निवेदन है कि मेरा ${v.type} स्वीकृत करने की कृपा करें। आवश्यक दस्तावेज़ संलग्न हैं।`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date});
+     return fmtEn({to:["The Social Welfare Officer,", v.village], subject:`Application for ${v.type}.`,
+       body:[`I, ${v.name}${v.age?", aged "+v.age:""}, resident of ${v.village}, am eligible for ${v.type} and need financial support.`,
+             `Kindly sanction my ${v.type}. Required documents are attached.`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date}); } },
+
+ { id:"utility", emoji:"💡", hi:"बिजली/पानी की शिकायत", en:"Electricity/Water complaint",
+   fields:[ {id:"type",hi:"किसकी शिकायत",en:"Complaint about",type:"select",opts_hi:["बिजली","पानी"],opts_en:["Electricity","Water"]},
+     {id:"dept",hi:"विभाग/कार्यालय (यदि पता हो)",en:"Department/Office (if known)"},
+     {id:"consumer",hi:"कनेक्शन/उपभोक्ता संख्या (यदि हो)",en:"Connection/Consumer no. (if any)"}, FN,
+     {id:"problem",hi:"समस्या क्या है",en:"What is the problem",type:"textarea",req:true},
+     {id:"village",hi:"पता / मोहल्ला",en:"Address / locality",req:true}, FM, FD ],
+   build(v){ const hi=LANG==="hi";
+     if(hi) return fmtHi({to:["अधिशासी अभियंता / संबंधित अधिकारी,", v.dept||(v.type+" विभाग")], subject:`${v.type} संबंधी समस्या की शिकायत।`,
+       body:[`निवेदन है कि मैं ${v.name}, निवासी ${v.village} हूँ${v.consumer?" (उपभोक्ता संख्या: "+v.consumer+")":""}.`,
+             `${v.type} से जुड़ी यह समस्या है: ${v.problem}.`, `कृपया शीघ्र समाधान कराने की कृपा करें।`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date});
+     return fmtEn({to:["The Executive Engineer / Concerned Officer,", v.dept||(v.type+" Department")], subject:`Complaint regarding ${v.type}.`,
+       body:[`I, ${v.name}, resident of ${v.village}${v.consumer?" (Consumer no: "+v.consumer+")":""}, report this ${v.type} problem: ${v.problem}.`,
+             `Kindly arrange an early solution.`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date}); } },
+
+ { id:"certificate", emoji:"📜", hi:"प्रमाण पत्र हेतु आवेदन", en:"Certificate application",
+   fields:[ {id:"type",hi:"कौन-सा प्रमाण पत्र",en:"Which certificate",type:"select",
+       opts_hi:["आय प्रमाण पत्र","जाति प्रमाण पत्र","निवास प्रमाण पत्र"], opts_en:["Income certificate","Caste certificate","Domicile certificate"]},
+     FN, FG, {id:"village",hi:"गाँव व पता",en:"Village & address",req:true},
+     {id:"purpose",hi:"किस काम के लिए चाहिए",en:"Needed for what purpose"}, FM, FD ],
+   build(v){ const hi=LANG==="hi";
+     if(hi) return fmtHi({to:["तहसीलदार महोदय / संबंधित अधिकारी,", v.village], subject:`${v.type} बनवाने हेतु आवेदन।`,
+       body:[`सविनय निवेदन है कि मैं ${v.name}${v.guardian?", पिता/पति "+v.guardian:""}, निवासी ${v.village} हूँ।`,
+             `मुझे ${v.type} की आवश्यकता ${v.purpose||"शासकीय कार्य"} हेतु है।`,
+             `अतः आपसे निवेदन है कि मेरा ${v.type} बनाने की कृपा करें। आवश्यक दस्तावेज़ संलग्न हैं।`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date});
+     return fmtEn({to:["The Tehsildar / Concerned Officer,", v.village], subject:`Application for ${v.type}.`,
+       body:[`I, ${v.name}${v.guardian?", child/spouse of "+v.guardian:""}, resident of ${v.village}, need a ${v.type} for ${v.purpose||"official purposes"}.`,
+             `Kindly issue my ${v.type}. Required documents are attached.`],
+       name:v.name, village:v.village, mobile:v.mobile, date:v.date}); } }
+];
+
+function renderTemplatesList(){
+  const l=document.getElementById("tmplList"); l.innerHTML="";
+  TEMPLATES.forEach(tpl=>{
+    const d=document.createElement("div"); d.className="tmpl";
+    d.innerHTML=`<span class="e">${tpl.emoji}</span><div><h3>${LANG==="hi"?tpl.hi:tpl.en}</h3>
+      <span>${LANG==="hi"?"खाली जगह भरें":"Fill the blanks"}</span></div><span class="go">›</span>`;
+    d.onclick=()=>openTemplate(tpl);
+    l.appendChild(d);
+  });
+}
+let CURRENT_TPL=null, CURRENT_VALS={};
+function openTemplatesView(){ renderTemplatesList(); show("templates"); }
+function openTemplate(tpl, values){
+  CURRENT_TPL=tpl; CURRENT_VALS=values||{};
+  document.getElementById("tformTitle").textContent=LANG==="hi"?tpl.hi:tpl.en;
+  const prof=getProfile();
+  let html=`<div class="note">${t("tp_fill")}</div>`;
+  tpl.fields.forEach(f=>{
+    const label=LANG==="hi"?f.hi:f.en;
+    let val = (f.id in CURRENT_VALS) ? CURRENT_VALS[f.id]
+            : (["name","guardian","village","mobile"].includes(f.id) ? (prof[f.id]||"") : "");
+    if(!val && f.id==="date") val=todayStr();
+    if(!val && f.def_hi) val=(LANG==="hi"?f.def_hi:f.def_en);
+    const star=f.req?' <span style="color:var(--brick)">*</span>':"";
+    html+=`<div class="fld"><label>${label}${star}</label>`;
+    if(f.type==="textarea"){
+      html+=`<div class="withmic"><textarea id="f_${f.id}">${esc(val)}</textarea><button class="micf" data-mic="f_${f.id}">🎤</button></div>`;
+    } else if(f.type==="select"){
+      const opts=(LANG==="hi"?f.opts_hi:f.opts_en)||[];
+      html+=`<select id="f_${f.id}">`+opts.map(o=>`<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")+`</select>`;
+    } else {
+      html+=`<input type="${f.type==="date"?"date":"text"}" id="f_${f.id}" value="${escA(val)}">`;
+    }
+    html+=`</div>`;
+  });
+  html+=`<button class="bigbtn primary" id="tMake">${t("tp_make")}</button>`;
+  document.getElementById("tformBody").innerHTML=html;
+  document.querySelectorAll("#tformBody .micf").forEach(b=>{
+    b.onclick=()=>{ const ta=document.getElementById(b.dataset.mic);
+      if(b.classList.contains("listening")){ stopListening(); return; }
+      startListening((txt)=>{ ta.value=txt; },[b]); };
+  });
+  document.getElementById("tMake").onclick=()=>makeTemplate(tpl);
+  show("tform");
+}
+function makeTemplate(tpl){
+  const v={};
+  tpl.fields.forEach(f=>{ const el=document.getElementById("f_"+f.id); v[f.id]=el?el.value.trim():""; });
+  if(!v.name || tpl.fields.some(f=>f.req && !v[f.id])){ toast(t("tp_need")); return; }
+  const prof=getProfile(); ["name","guardian","village","mobile"].forEach(k=>{ if(v[k]) prof[k]=v[k]; }); setProfile(prof);
+  CURRENT_VALS=v;
+  const text=tpl.build(v);
+  const body=document.getElementById("tformBody");
+  body.innerHTML=`<div class="result">${esc(text)}</div>
+    <div class="res-acts">
+      <button class="bigbtn listen2" id="rListen">${t("tp_listen")}</button>
+      <button class="bigbtn copy2" id="rCopy">${t("tp_copy")}</button>
+      <button class="bigbtn save2" id="rSave">${t("tp_save")}</button>
+      <button class="bigbtn wa" id="rWa">${t("tp_wa")}</button>
+    </div>
+    <button class="bigbtn ghost" id="rEdit">${t("tp_edit")}</button>`;
+  document.getElementById("rListen").onclick=()=>speak(text);
+  document.getElementById("rCopy").onclick=async()=>{ try{ await navigator.clipboard.writeText(text); }catch(e){} toast(t("dc_copied")); };
+  const sv=document.getElementById("rSave");
+  sv.onclick=()=>{ saveDoc(text); sv.textContent="✓ "+t("dc_saved"); sv.disabled=true; };
+  document.getElementById("rWa").onclick=()=>{ try{ window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank"); }catch(e){} };
+  document.getElementById("rEdit").onclick=()=>openTemplate(tpl, v);
+}
+
+/* ---- 12. Wiring ---------------------------------------------------- */
+const input=document.getElementById("input");
+document.getElementById("sendBtn").onclick=()=>{ sendMessage(input.value); input.value=""; input.style.height="50px"; };
+input.addEventListener("input",()=>{ input.style.height="50px"; input.style.height=Math.min(input.scrollHeight,120)+"px"; });
+input.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); document.getElementById("sendBtn").click(); }});
+
+// composer mic
+const cMic=document.getElementById("composerMic");
+cMic.onclick=()=>{
+  if(cMic.classList.contains("listening")){ stopListening(); return; }
+  startListening((txt,final)=>{ input.value=txt; input.dispatchEvent(new Event("input"));
+    if(final){ /* user can review then press send */ } }, [cMic]);
+};
+
+// home mic — speak, then route to assistant
+const homeMic=document.getElementById("homeMic");
+const homeHeard=document.getElementById("homeHeard");
+const micHint=document.getElementById("micHint");
+homeMic.onclick=()=>{
+  if(homeMic.classList.contains("listening")){ stopListening(); return; }
+  homeMic.classList.remove("idle");
+  micHint.textContent=t("listening");
+  homeHeard.textContent="";
+  startListening((txt,final)=>{
+    homeHeard.textContent=txt;
+    if(final && txt.trim()){
+      micHint.textContent=t("tapspeak"); homeMic.classList.add("idle");
+      openHelper(HELPERS.find(h=>h.id==="assistant"));
+      sendMessage(txt);
+    }
+  },[homeMic]);
+};
+
+// back buttons
+document.querySelectorAll("[data-home]").forEach(b=>b.onclick=()=>show("home"));
+document.querySelectorAll("[data-lessons]").forEach(b=>b.onclick=()=>{renderLessons();show("lessons");});
+document.getElementById("tformBack").onclick=()=>{ renderTemplatesList(); show("templates"); };
+
+// language toggle
+document.getElementById("lang").querySelectorAll("button").forEach(btn=>{
+  btn.onclick=()=>{
+    LANG=btn.dataset.lang; store.set("lang",LANG);
+    document.getElementById("lang").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===btn));
+    applyStrings(); renderHelpers();
+    input.placeholder=t("writeOrSpeak");
+    reRenderActive();
+  };
+});
+function applyStrings(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll("[data-t]").forEach(el=>{ el.textContent=t(el.dataset.t); });
+}
+
+// online/offline banner
+function updateNet(){ document.getElementById("offlineBanner").classList.toggle("show", !navigator.onLine); }
+window.addEventListener("online",updateNet); window.addEventListener("offline",updateNet);
+
+function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"),2600); }
+
+/* ---- 13. Init ------------------------------------------------------ */
+(function init(){
+  // set active language button
+  document.getElementById("lang").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
+  applyStrings(); renderHelpers(); updateNet();
+  input.placeholder=t("writeOrSpeak");
+  checkReminders(); setInterval(checkReminders, 20000);
+  // Optional PWA: if you add sw.js next to this file, it will be used for offline.
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("sw.js").catch(()=>{ /* fine — app still works */ });
+  }
+})();
+</script>
+</body>
+</html>
